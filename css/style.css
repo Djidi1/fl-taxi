@@ -129,6 +129,13 @@ input.order-route-data, select.order-route-data {
     padding: 10px 5px 2px 5px;
     border: 0;
 }
+
+.routes-block span.select2-selection {
+    border: 0;
+    background: none;
+    padding-top: 5px;
+}
+
 input.order-route-data.number {
     text-align: center;
 }

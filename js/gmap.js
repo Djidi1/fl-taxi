@@ -145,7 +145,7 @@ function calc_route(recalc_cost, dest_point) {
         getDestCoordsFromYandex(destination_point.location);
         return true;
     }
-    var destination_point_location = (typeof dest_point == 'undefined') ? destination_point.location : dest_point;
+    var destination_point_location = (typeof dest_point == 'undefined' || dest_point == '') ? destination_point.location : dest_point;
 
     if (origin_point === ''){
         origin_point = way_points.pop();
@@ -353,6 +353,12 @@ function getDestCoordsFromYandex(dest_point){
             calc_route(1, ll);
         }else {
             console.log(data);
+        }
+    }).fail(function(data) {
+        console.log(data.status);
+        // 429 - Превышен лимит в 25 000 запросов в сутки
+        if (data.status === 429) {
+            calc_route(1, '')
         }
     });
 }

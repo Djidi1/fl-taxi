@@ -130,7 +130,7 @@ class ordersModel extends module_model {
 	}
 
 	public function getRoutes($order_id) {
-		$sql = 'SELECT r.id id_route, `to`,`to_region`,to_house,to_corpus,to_appart,
+		$sql = 'SELECT r.id id_route, `to`,to_region,to_AOGUID,to_house,to_corpus,to_appart,
 					  to_fio,to_phone,to_coord,from_coord,lenght,cost_route,cost_tovar,cost_car,
 					  `to_time`,`to_time_end`,r.`comment`, s.status, s.id status_id, r.pay_type, 
 					  r.to_time_ready
@@ -513,7 +513,7 @@ class ordersModel extends module_model {
                 // Если сбросили курьера, но не отмена
                 $params ['status'][$key] = ($params['car_courier'] == 0 and $params ['status'][$key] != 5) ? 1 : $params ['status'][$key];
 				$sql_values .= ($key > 0)?',':'';
-                $sql_values .= ' (\''.$order_id.'\',\''.$params ['to'][$key].'\',\''.$params ['to_region'][$key].'\',
+                $sql_values .= ' (\''.$order_id.'\',\''.$params ['to'][$key].'\',\''.$params ['to_region'][$key].'\',\''.$params ['to_AOGUID'][$key].'\',
                             \''.$params ['to_house'][$key].'\',\''.$params ['to_corpus'][$key].'\',
 							\''.$params ['to_appart'][$key].'\',\''.$params ['to_fio'][$key].'\',\''.$params ['to_phone'][$key].'\',
 							\''.$params ['cost_route'][$key].'\',\''.$params ['cost_tovar'][$key].'\',\''.$params ['cost_car'][$key].'\',
@@ -521,7 +521,7 @@ class ordersModel extends module_model {
 							\''.$params ['to_time_ready'][$key].'\',\''.$params ['pay_type'][$key].'\',\''.$params ['status'][$key].'\'	)';
 			}
 			if ($sql_values != '') {
-                $sql = "INSERT INTO orders_routes (id_order,`to`,`to_region`,`to_house`,`to_corpus`,`to_appart`,`to_fio`,`to_phone`,`cost_route`,`cost_tovar`,`cost_car`,`to_time`,`to_time_end`,`comment`, `to_time_ready`, `pay_type`, `id_status`) VALUES $sql_values";
+                $sql = "INSERT INTO orders_routes (id_order,`to`,`to_region`,`to_AOGUID`,`to_house`,`to_corpus`,`to_appart`,`to_fio`,`to_phone`,`cost_route`,`cost_tovar`,`cost_car`,`to_time`,`to_time_end`,`comment`, `to_time_ready`, `pay_type`, `id_status`) VALUES $sql_values";
                 $this->query($sql);
             }
 		}
@@ -609,8 +609,6 @@ class ordersProcess extends module_process {
 		parent::__construct ( $modName );
 		$this->Vals = $values;
 		$this->System = $System;
-		if (! $modName)
-			unset ( $this );
 		$this->modName = $modName;
 		$this->User = $User;
 		$this->Log = $LOG;
@@ -752,6 +750,7 @@ class ordersProcess extends module_process {
 			$params['order_comment'] = $this->Vals->getVal ( 'order_comment', 'POST', 'string' );
 			$params['to'] = $this->Vals->getVal ( 'to', 'POST', 'array' );
 			$params['to_region'] = $this->Vals->getVal ( 'to_region', 'POST', 'array' );
+			$params['to_AOGUID'] = $this->Vals->getVal ( 'to_AOGUID', 'POST', 'array' );
 			$params['to_time_ready'] = $this->Vals->getVal ( 'to_time_ready', 'POST', 'array' );
 			$params['to_house'] = $this->Vals->getVal ( 'to_house', 'POST', 'array' );
 			$params['to_corpus'] = $this->Vals->getVal ( 'to_corpus', 'POST', 'array' );
@@ -818,8 +817,8 @@ class ordersProcess extends module_process {
                 if (isset($chat_id) and $chat_id != '') {
                     $this->telegram($message, $chat_id);
 //                    $this->telegram($message, '243045100'); // Отправка нового заказа Админу
-                    $this->telegram($message, '196962258');
-                    $this->telegram($message, '379575863');
+//                    $this->telegram($message, '196962258');
+//                    $this->telegram($message, '379575863');
                 }
             }
 

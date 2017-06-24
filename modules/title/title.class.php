@@ -42,8 +42,6 @@ class titleProcess extends module_process {
 		parent::__construct ( $modName );
 		$this->Vals = $values;
 		$this->System = $System;
-		if (! $modName)
-			unset ( $this );
 		$this->modName = $modName;
 		$this->User = $User;
 		$this->Log = $LOG;

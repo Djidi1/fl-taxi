@@ -256,10 +256,13 @@
                 <span class="order-add-title text-info">Адрес доставки</span>
                 <input type="search" class="order-route-data spb-streets js-street_upper" name="to[]" title="Улица, проспект и т.д." value="{to}" onchange="" autocomplete="off" required="" region="{to_region}"/>
                 <input type="hidden" class="to_region" name="to_region[]" value="{to_region}"/>
+                <input type="hidden" class="to_AOGUID" name="to_AOGUID[]" value="{to_AOGUID}"/>
             </div>
             <div class="form-control" style="width: 20%;">
                 <span class="order-add-title text-info">дом/корп/строение</span>
-                <input type="text" class="order-route-data to_house number" name="to_house[]" title="Дом" value="{to_house}" onchange="calc_route(1)" autocomplete="off" required=""/>
+                <select type="text" class="order-route-data to_house number" name="to_house[]" title="Дом" value="{to_house}" onchange="calc_route(1)" autocomplete="off" required="" AOGUID="{to_AOGUID}">
+                    <option value="{to_house}"><xsl:value-of select="to_house"/></option>
+                </select>
             </div>
             <div class="form-control" style="width: 15%; display:none">
                 <span class="order-add-title text-info">корп/строение</span>
@@ -303,10 +306,11 @@
                 </label>
             </div>
 
+<!-- Строка времени -->
 
-            <div class="form-control" style="width: 34%;">
+            <div class="form-control" style="width: 25%;">
                 <span class="order-add-title text-danger">
-                    Можно забрать в
+                    Можно забрать с
                 </span>
                 <xsl:call-template name="time_selector">
                     <xsl:with-param name="select_class">order-route-data number to_time_ready</xsl:with-param>
@@ -316,9 +320,22 @@
                     <xsl:with-param name="select_onchange">update_time_ready(this)</xsl:with-param>
                 </xsl:call-template>
             </div>
-            <div class="form-control target_select" style="width: 66%;">
+            <div class="form-control" style="width: 25%;">
+                <span class="order-add-title text-danger">
+                    Можно забрать по
+                </span>
+                <xsl:call-template name="time_selector">
+                    <xsl:with-param name="select_class">order-route-data number to_time_ready_end</xsl:with-param>
+                    <xsl:with-param name="select_name">to_time_ready_end[]</xsl:with-param>
+                    <xsl:with-param name="select_title">Время готовности</xsl:with-param>
+                    <xsl:with-param name="select_value" select="to_time_ready_end"/>
+                    <xsl:with-param name="select_onchange">update_time_ready_end(this)</xsl:with-param>
+                </xsl:call-template>
+            </div>
+
+            <div class="form-control target_select" style="width: 50%;">
                 <xsl:if test="../../order/target != 1 or not(../../order/target)">
-                    <xsl:attribute name="style">width: 66%; display:none;</xsl:attribute>
+                    <xsl:attribute name="style">width: 50%; display:none;</xsl:attribute>
                 </xsl:if>
                 <span class="order-add-title text-primary">
                     Доставить К
@@ -331,7 +348,7 @@
                     <xsl:with-param name="select_onchange">test_time_routes_add(); time_routes_set(this); $('.to_time').val($(this).val());$('.to_time_end').val($(this).val());</xsl:with-param>
                 </xsl:call-template>
             </div>
-            <div class="form-control period_select" style="width: 33%;">
+            <div class="form-control period_select" style="width: 25%;">
                 <xsl:if test="../../order/target = 1">
                     <xsl:attribute name="style">width: 33%; display:none;</xsl:attribute>
                 </xsl:if>
@@ -346,7 +363,7 @@
                     <xsl:with-param name="select_onchange">test_time_routes_add(); $('.to_time_target').val($(this).val());</xsl:with-param>
                 </xsl:call-template>
             </div>
-            <div class="form-control period_select" style="width: 33%;">
+            <div class="form-control period_select" style="width: 25%;">
                 <xsl:if test="../../order/target = 1">
                     <xsl:attribute name="style">width: 33%; display:none;</xsl:attribute>
                 </xsl:if>
@@ -361,8 +378,31 @@
                     <xsl:with-param name="select_onchange">test_time_routes_add()</xsl:with-param>
                 </xsl:call-template>
             </div>
-
-
+<!-- Строка оплаты -->
+            <div class="form-control" style="width: 20%;">
+                <span class="order-add-title text-success">
+                    Что доставляем?
+                </span>
+                <xsl:if test="//@user_pay_type > 0">
+                    <input type="hidden" name="pay_type[]" value="{//@user_pay_type}" />
+                </xsl:if>
+                <select class="order-route-data pay_type" name="pay_type[]" title="Тип оплаты курьеру" onchange="re_calc(this)" required="">
+                    <xsl:if test="//@user_pay_type > 0">
+                        <xsl:attribute name="disabled">disabled</xsl:attribute>
+                    </xsl:if>
+                    <xsl:variable name="pay_type" select="pay_type"/>
+                    <xsl:variable name="user_pay_type" select="//@user_pay_type"/>
+                    <option value=""> </option>
+                    <xsl:for-each select="../../pay_types/item">
+                        <option value="{id}">
+                            <xsl:if test="id = $pay_type or (not($pay_type) and $user_pay_type = id)">
+                                <xsl:attribute name="selected">selected</xsl:attribute>
+                            </xsl:if>
+                            <xsl:value-of select="pay_type"/>
+                        </option>
+                    </xsl:for-each>
+                </select>
+            </div>
             <div class="form-control" style="width: 20%;">
                 <span class="order-add-title text-success">
                     Инкассация
@@ -415,7 +455,7 @@
                     </xsl:for-each>
                 </select>
             </div>
-            <div class="form-control" style="width: 20%;">
+            <div class="form-control" style="width: 20%; display:none;">
                 <span class="order-add-title text-success">
                     Общая сумма
                 </span>

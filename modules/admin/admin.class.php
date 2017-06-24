@@ -725,10 +725,7 @@ class adminProcess extends module_process {
 		
 		//	if ($modName != 'admin') exit('Access denied');
 		parent::__construct ( $modName );
-		$this->Vals = $values;
-		if (! $modName)
-			unset ( $this );
-		
+		$this->Vals = $values;		
 		$this->modName = $modName;
 		$this->User = $User;
 		$this->Log = $LOG;

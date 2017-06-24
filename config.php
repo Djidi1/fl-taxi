@@ -2,7 +2,7 @@
 
 //if ($_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
     define ('DB_HOST','localhost');
-	define ('DB_DATABASE','pochta911');
+	define ('DB_DATABASE','fl-taxi');
 	define ('DB_USER','root');
 	define ('DB_PASS','');
 //} else {

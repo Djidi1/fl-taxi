@@ -40,6 +40,11 @@ function update_time_ready(obj){
     $('.to_time_ready').val(time_ready);
     test_time_routes_add();
 }
+function update_time_ready_end(obj){
+    var time_ready = $(obj).val();
+    $('.to_time_ready_end').val(time_ready);
+    test_time_routes_add();
+}
 
 function set_time_period (start, end) {
     $(start).datetimepicker(timeoptions);
@@ -204,9 +209,11 @@ function autoc_spb_streets(){
                 });
             },
             updater: function (item) {
-                $($this).parent().parent().find('.to_house').attr('AOGUID', item.id);
+                $($this).parent().parent().find('.to_house').attr('AOGUID', item.id).val('');
+                $($this).parent().parent().find('.to_AOGUID').val(item.id);
                 $($this).parent().parent().find('.to_region').val(item.region);
                 $($this).attr('region', item.region);
+                getHouseNumbers();
                 return item;
             },
             minLength: 4,
@@ -214,28 +221,7 @@ function autoc_spb_streets(){
             items: 'all'
         });
     });
-    // Применяем для подбора домов
-    $(".to_house").each(function() {
-        var $this = $(this);
-        $this.typeahead({
-            source: function (query, process) {
-                var AOGUID=$($this).attr('AOGUID');
-                $.ajax({
-                    url: '/service/kladr.php',
-                    type: 'POST',
-                    data: 'type=house&house=' + query + '&AOGUID=' + AOGUID,
-                    dataType: 'JSON',
-                    async: true,
-                    timeout: 5000,
-                    success: function (data) {
-                        process(data);
-                    }
-                });
-            },
-            minLength: 0,
-            items: 'all'
-        });
-    });
+    getHouseNumbers();
     /*
     var saved_data = localStorage.getItem('spb_street_data');
     if (typeof saved_data == 'undefined' || saved_data == null || saved_data == '' ) {
@@ -248,6 +234,86 @@ function autoc_spb_streets(){
         $(".spb-streets").typeahead({ source: localData, hint: true });
     }
     */
+}
+
+function getHouseNumbers() {
+    // Применяем для подбора домов
+    $(".to_house").each(function() {
+        var $this = $(this);
+        var AOGUID=$($this).attr('AOGUID');
+        $this.select2({
+            language: "ru",
+            ajax: {
+                url: "/service/kladr.php",
+                type: 'POST',
+                data: function (params) {
+                    var house = (typeof params.term == 'undefined')?$this.val():params.term;
+                    return {
+                        house: house, // search term
+                        type: 'house',
+                        AOGUID: AOGUID
+                    };
+                },
+                dataType: 'JSON',
+                async: true,
+                timeout: 5000,
+                cache: true,
+                processResults: function (data) {
+                    return {
+                        results: $.map(data.items, function (item) {
+                            return {
+                                text: item.name,
+                                id: item.name
+                            }
+                        })
+                    };
+                }
+            }
+        });
+        /*
+        $.ajax({
+            url: '/service/kladr.php',
+            type: 'POST',
+            data: 'type=house&house=&AOGUID=' + AOGUID,
+            dataType: 'JSON',
+            async: true,
+            timeout: 5000,
+            success: function (data) {
+                $this.html('');
+                $.each(data, function (idx, obj) {
+                    $this.append('<option value="' + obj.name + '">' + obj.name + '</option>');
+                });
+                $this.trigger("liszt:updated");
+                $this.select2().css('width','100%');
+            }
+        });
+        */
+        /*
+         $this.typeahead({
+         source: function (query, process) {
+         $.ajax({
+         url: '/service/kladr.php',
+         type: 'POST',
+         data: 'type=house&house=' + query + '&AOGUID=' + AOGUID,
+         dataType: 'JSON',
+         async: true,
+         timeout: 5000,
+         success: function (data) {
+         source_data = data;
+         process(data);
+         }
+         });
+         },
+         minLength: 0,
+         items: 'all'
+         }).blur(function () {
+         console.log(source_data);
+         if(source_data.includes($(this).val())) {
+         console.log('Error : element not in list!');
+         }
+         });
+         */
+    });
 }
 
 function updUserStores(obj){
@@ -326,8 +392,7 @@ function target_time_show(){
     test_time_routes_add();
 }
 
-function round5(x)
-{
+function round5(x){
     return Math.ceil(x/5)*5;
 }
 // адская проверка времени
@@ -336,6 +401,7 @@ function test_time_routes_add() {
     $('div.routes-block').each(function (index) {
         var next_route = $('div.routes-block').eq(index+1);
         var this_ready = $(this).find('.to_time_ready').val();
+        var this_ready_end = $(this).find('.to_time_ready_end').val();
         var this_to_time = $(this).find('.to_time').val();
         var this_to_time_target = $(this).find('.to_time_target').val();
         var next_to_time = $(next_route).find('.to_time').val();
@@ -350,10 +416,15 @@ function test_time_routes_add() {
             $(this).find('.to_time_ready').val(time_now_string);
             bootbox.alert('Время готовности не может быть меньше текущего времени.');
         }
+        // Если время готовности ПО меньше времени готовности С
+        else if (TimeToFloat(this_ready_end) < TimeToFloat(this_ready)) {
+            $(this).find('.to_time_ready_end').val(this_ready);
+            test_time_routes_add();
+        }
         // Если время готовности меньше времени С
-        else if (TimeToFloat(this_ready) > TimeToFloat(this_to_time) || TimeToFloat(this_ready) > TimeToFloat(this_to_time_target)) {
-            $(this).find('.to_time').val(this_ready);
-            $(this).find('.to_time_target').val(this_ready);
+        else if (TimeToFloat(this_ready_end) > TimeToFloat(this_to_time) || TimeToFloat(this_ready_end) > TimeToFloat(this_to_time_target)) {
+            $(this).find('.to_time').val(this_ready_end);
+            $(this).find('.to_time_target').val(this_ready_end);
             test_time_routes_add();
         }
         // Если время С меньше времени ПО

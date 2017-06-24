@@ -75,6 +75,11 @@ if ($search_type == 'street') {
 if ($search_type == 'house') {
     $house = $_POST['house'];
     $AOGUID = $_POST['AOGUID'];
+
+    preg_match('/(\d+)/', $house, $matches, PREG_OFFSET_CAPTURE, 0);
+    if (isset($matches[1][0])){
+        $house = $matches[1][0];
+    }
     $items = array();
     $i = 0;
     // 1. Ищем дома на улице в городе
@@ -98,10 +103,12 @@ if ($search_type == 'house') {
     $res = array();
     while ($row = mysqli_fetch_assoc($result) and $i < 100) {
         $res['name'] = ''.$row['HOUSENUM'].($row['BUILDNUM'] != ''?'к'.$row['BUILDNUM']:'');
+        $res['id'] = ''.$row['HOUSENUM'].($row['BUILDNUM'] != ''?'к'.$row['BUILDNUM']:'');
+        $res['text'] = ''.$row['HOUSENUM'].($row['BUILDNUM'] != ''?'к'.$row['BUILDNUM']:'');
         $items[] = $res;
         $i++;
     }
-    echo json_encode($items);
+    echo '{"items": '.json_encode($items).'}';
     exit();
 }
 
