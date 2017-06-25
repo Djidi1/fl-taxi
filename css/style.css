@@ -135,6 +135,28 @@ input.order-route-data, select.order-route-data {
     background: none;
     padding-top: 5px;
 }
+input.select2-search__field {
+    border: none !important;
+}
+span.select2-dropdown {
+    top: -29px;
+}
+
+.time_check_list input.form-control {
+    width: 64px;
+    display: inline;
+    text-align: right;
+}
+
+ul.list-group.list-group-striped li:nth-of-type(odd){
+    background: #ededff;
+}
+ul.list-group.list-group-striped li:nth-of-type(even){
+    background: #ffffff;
+}
+ul.list-group.list-group-hover li:hover{
+    background: #e5e1e4;
+}
 
 input.order-route-data.number {
     text-align: center;

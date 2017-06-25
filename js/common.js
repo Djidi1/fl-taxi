@@ -93,55 +93,16 @@ function check_user(obj){
     },500,elem_type);
 }
 
-function open_bootbox_dialog(url) {
-    window.location.href = url;
-    // bootbox.dialog({
-    //     title: "Карточка заказа",
-    //     message: '<iframe style="border:0;" src="'+url+'/without_menu-1/" height="500" width="100%" ></iframe>',
-    //     className: "largeWidth",
-    //     buttons: {
-    //         'cancel': {
-    //             label: 'Закрыть',
-    //             className: 'btn-default pull-left'
-    //         }
-    //     }
-    // });
-}
-
-function popup_excel(url) {
-    bootbox.alert({
-        title: "Экспорт в эксель",
-        message: '<iframe style="border:0;" src="/'+url+'/without_menu-1/" height="200" width="100%"  scrolling="no"></iframe>',
-        className: "minWidth",
-        buttons: {
-            'ok': {
-                label: 'Закрыть',
-                className: 'btn-default pull-left'
-            }
-        }
-    });
-}
-
-function chg_courier(order_id){
-    var order_route_id = $('tr.order_'+order_id).first().attr('rel');
-    $.post("/orders/chg_courier-1/", {order_id:order_id},  function(data) {
-        bootbox.confirm({
-            title: "Изменение курьера в заказе № "+order_id,
-            message: data,
-            callback: function(result){ if(result){send_new_courier()} }
-        });
-        //bootbox.alert(data,send_new_status(this));
-    });
-}
 
 function send_new_courier(){
-    var order_id = $('.bootbox-body').find('input[name=order_id]').val();
-    var order_route_id = $('.bootbox-body').find('input[name=order_route_id]').val();
+    var $bootbox_body = $('.bootbox-body');
+    var order_id = $bootbox_body.find('input[name=order_id]').val();
+    var order_route_id = $bootbox_body.find('input[name=order_route_id]').val();
     // var new_courier = $('.bootbox-body').find('select[name=new_courier]').val();
-    var new_courier = $('.bootbox-body').find('input[name=new_courier]').val();
-    var new_car_courier = $('.bootbox-body').find('select[name=new_car_courier]').val();
-    var courier_comment = $('.bootbox-body').find('textarea[name=courier_comment]').val();
-    var order_info_message = $('.bootbox-body').find('input[name=order_info_message]').val();
+    var new_courier = $bootbox_body.find('input[name=new_courier]').val();
+    var new_car_courier = $bootbox_body.find('select[name=new_car_courier]').val();
+    var courier_comment = $bootbox_body.find('textarea[name=courier_comment]').val();
+    var order_info_message = $bootbox_body.find('input[name=order_info_message]').val();
 
     $.post("/orders/chg_courier-1/", {order_id:order_id,order_route_id:order_route_id,new_courier:new_courier,new_car_courier:new_car_courier,courier_comment:courier_comment,order_info_message:order_info_message},  function(data) {
           bootbox.alert(data,location.reload());
@@ -150,37 +111,14 @@ function send_new_courier(){
 
 }
 
-function chg_status(order_id){
-    $.post("/orders/chg_status-1/", {order_id:order_id},  function(data) {
-        bootbox.confirm({
-            title: "Изменение статуса доставки в заказе № "+order_id,
-            message: data,
-            callback: function(result){ if(result){send_new_status()} }
-        });
-        // bootbox.alert(data,send_new_status(this));
-    });
-}
-
-function cancel_order(order_id){
-    bootbox.confirm({
-        title: "Отмена заказа № "+order_id,
-        message: "Вы уверены, что хотите отменить заказ № "+order_id+"?",
-        callback: function(result){ if(result){
-            $.post("/orders/chg_status-1/",
-                {order_id:order_id,order_route_id:'',new_status:5,stat_comment:'отмена заказа',order_info_message:' '},
-                function(data) {
-                bootbox.alert(data,location.reload());
-            });
-        } }
-    });
-
-}
 
 function send_new_status(){
-    var order_route_id = $('.bootbox-body').find('input[name=order_route_id]').val();
-    var new_status = $('.bootbox-body').find('select[name=new_status]').val();
-    var stat_comment = $('.bootbox-body').find('textarea[name=comment_status]').val();
-    var order_info_message = $('.bootbox-body').find('input[name=order_info_message]').val();
+    var $bootbox_body = $('.bootbox-body');
+
+    var order_route_id = $bootbox_body.find('input[name=order_route_id]').val();
+    var new_status = $bootbox_body.find('select[name=new_status]').val();
+    var stat_comment = $bootbox_body.find('textarea[name=comment_status]').val();
+    var order_info_message = $bootbox_body.find('input[name=order_info_message]').val();
 
     $.post("/orders/chg_status-1/", {order_route_id:order_route_id,new_status:new_status,stat_comment:stat_comment,order_info_message:order_info_message},  function(data) {
         bootbox.alert(data,location.reload());
@@ -360,18 +298,7 @@ function re_calc(obj){
     $(route_row).find('.cost_all').val(inkass);
 }
 
-//Блокировка времени после значения
-function disable_next(obj, value){
-    var disable_next = false;
-    $(obj).find('option').each(function () {
-        if (disable_next){
-            $(this).attr('disabled','');
-        }
-        if ($(this).text() == value){
-            disable_next = true;
-        }
-    });
-}
+
 
 //
 function time_routes_set(obj){
@@ -406,7 +333,7 @@ function test_time_routes_add() {
         var this_to_time_target = $(this).find('.to_time_target').val();
         var next_to_time = $(next_route).find('.to_time').val();
         var this_to_time_end = $(this).find('.to_time_end').val();
-        var next_to_time_end = $(next_route).find('.to_time_end').val();
+        // var next_to_time_end = $(next_route).find('.to_time_end').val();
         // Текущее время
         var m = moment(new Date());
         var time_now_string = m.hour() + ':' + round5(m.minute());
@@ -468,7 +395,8 @@ function test_time_all_routes(){
         var first_time = '';
         var prev_time = '';
         var need_sync = false;
-        $('div.routes-block').each(function (index) {
+        var $routes_block = $('div.routes-block');
+        $routes_block.each(function (index) {
             var this_time = $(this).find('.to_time_ready').val();
             if (index == 0) {
                 first_time = this_time;
@@ -481,7 +409,7 @@ function test_time_all_routes(){
         });
 
         var invalid = false;
-        $('div.routes-block').find("select:required, input:required", this).each(function () {
+        $routes_block.find("select:required, input:required", this).each(function () {
             if ($(this).val().trim() == "") {
                 invalid = true;
                 $(this).focus();
@@ -493,11 +421,11 @@ function test_time_all_routes(){
         }
         if (need_sync) {
             bootbox.alert('Время готовности всех заказов должно быть единым.<br/>Мы установили равным времени готовности первого заказа по маршруту');
-            $('div.routes-block').find('.to_time_ready').val(first_time);
+            $routes_block.find('.to_time_ready').val(first_time);
             return false;
         }
 
-        $('div.routes-block').each(function () {
+        $routes_block.each(function () {
             var this_ready = $(this).find('.to_time_ready').val();
             var this_to_time = $(this).find('.to_time').val();
             var this_to_time_end = $(this).find('.to_time_end').val();
@@ -516,7 +444,7 @@ function test_time_all_routes(){
                 return false;
             }
         });
-        $('div.routes-block').each(function () {
+        $routes_block.each(function () {
             test_time_routes_each(this);
         });
     }else{
@@ -541,8 +469,20 @@ function test_time_routes_each(route_row){
 
     var today = $('.today-date').val();
     var tomarrow = moment(today, 'DD.MM.YYYY').add(1, 'days').format('L');
-    var set_date = $('input[name=date]').val();
+    var $date = $('input[name=date]');
+    var set_date = $date.val();
 
+    // времена для проверки
+    var period_tomarrow_from = $('#period_tomarrow_from').val();
+    var period_tomarrow_to = $('#period_tomarrow_to').val();
+    var period_today_from = $('#period_today_from').val();
+    var period_today_to = $('#period_today_to').val();
+    var ready_1_from = $('#ready_1_from').val();
+    var ready_1_to = $('#ready_1_to').val();
+    var ready_1_period = $('#ready_1_period').val();
+    var ready_2_period = $('#ready_2_period').val();
+    var ready_today_period = $('#ready_today_period').val();
+    var period_period = $('#period_period').val();
 
 
     // Если время доставки меньше текущего, то заказ на следующий день (проверяю по второму времени)
@@ -554,47 +494,50 @@ function test_time_routes_each(route_row){
     // Если время доставки меньше готовности, то заказ на следующий день
     tt_end = (tt_end - tt_ready) < 0 ? tt_end + 24 : tt_end;
 
-    // если готовность букета с 8 до 10, то мы разрешаем выставлять рамки заказа в пределах 1 часа от времени готовности,
+    // (1) Заказы вечером на завтра запрещены на утро (проверка по крайнему времени доставки)
+    if ( set_date == tomarrow && t_now > period_tomarrow_to && tt_end < period_tomarrow_from ){
+        errors += '<li>Заказ с доставкой в период с 8:00 до '+period_tomarrow_from+':00 можно оставить не позднее '+period_tomarrow_to+':00.</li><br/>';
+        no_error = false;
+    }
+    // (2) Заказы утром на сегодняшнее утро запрещены  (проверка по крайнему времени доставки)
+    if ( set_date == today && t_now < period_today_to && tt_end < period_today_from ){
+        errors += '<li>Заказ с доставкой в период с 8:00 до '+period_today_from+':00 можно оставить не раньше '+period_today_to+':00.</li><br/>';
+        no_error = false;
+    }
+
+    // (3) если готовность букета с 8 до 10, то мы разрешаем выставлять рамки заказа в пределах 1 часа от времени готовности,
     // и остальные проверки кроме, 2,5 часов оствляем
-    if (tt_ready >= 8 && tt_ready <= 10){
-        // проверка от готовности до начала доставки - 1 час
-        if ((tt_end - tt_ready) < 2){
-            errors += '<li>Крайнее время доставки не может быть меньше 2 часов от времени готовности.</li><br/>';
+    if (tt_ready >= ready_1_from && tt_ready <= ready_1_to){
+        // проверка от готовности до начала доставки - 2 час
+        if ((tt_end - tt_ready) < ready_1_period){
+            errors += '<li>Крайнее время доставки не может быть меньше '+ready_1_period+' ч. от времени готовности.</li><br/>';
             no_error = false;
         }
-    }else {
-        // проверка от готовности (2,5 часа) - 18.05.2017 - заменил на 3 часа
-        if ((tt_end - tt_ready) <= 3) {
-            errors += '<li>Крайнее время доставки не может быть меньше 3 часов от времени готовности.</li><br/>';
+    } else {
+        // (4) проверка от готовности (2,5 часа) - 18.05.2017 - заменил на 3 часа
+        if ((tt_end - tt_ready) <= ready_2_period) {
+            errors += '<li>Крайнее время доставки не может быть меньше '+ready_2_period+' ч. от времени готовности.</li><br/>';
             no_error = false;
         }
-        // Проверка от времени заказа ()
-        if (set_date == today && (tt_end_2 - t_now) <= 2.9 ){
-            errors += '<li>Крайнее время доставки не может быть меньше 3 часов от времени заказа.</li><br/>';
+        // (5) Проверка от времени заказа
+        if (set_date == today && (tt_end_2 - t_now) <= ready_today_period ){
+            errors += '<li>Крайнее время доставки не может быть меньше '+ready_today_period+' ч. от времени заказа.</li><br/>';
             no_error = false;
         }
     }
-    // Проверка от и до не менее 40 мин, если только не к точному времени
-    if ((tt_end_2 - tt_2) <= 0.65 && !$('.target').prop('checked')){
-        errors += '<li>Интервал доставки не может быть менее 40 минут.</li><br/>';
+    // (6) Проверка от и до не менее 40 мин, если только не к точному времени
+    if ((tt_end_2 - tt_2) < (period_period / 60) && !$('.target').prop('checked')){
+        errors += '<li>Интервал доставки не может быть менее '+period_period+' мин.</li><br/>';
         no_error = false;
     }
 
 
-    // Заказы вечером на завтра и утром на сегодня запрещены на утро (проверка по крайнему времени доставки)
-    if ((set_date == tomarrow && t_now > 21 && tt_end < 12) || (set_date == today && t_now < 9 && tt_end < 12 ) ){
-        errors += '<li>Заказ с доставкой в период с 8:00 до 12:00 можно оставить не раньше 09:00 и не позднее 21:00.</li><br/>';
-        no_error = false;
-    }
-    // if ((set_date == tomarrow && t_now > 21 && tt_end < 11) || (set_date == today && t_now < 11 && tt_end < 11 ) ){
-    //     errors += '<li>Заказ с доставкой в период с 8:00 до 11:00 можно оставить не позднее 21:00.</li><br/>';
-    //     no_error = false;
-    // }
+
     // Только для новых заказов
     if ($('#order_id').val() == '') {
         // Добавляем день, если заказ на текущей и время готовности меньше текушего
-        if (moment($('input[name=date]').val(), 'DD.MM.YYYY').isSame(Date.now(), 'day') && (tt_end - t_now) < 0) {
-            $('input[name=date]').val(moment($('input[name=date]').val(), 'DD.MM.YYYY').add(1, 'days').format('L'));
+        if (moment($date.val(), 'DD.MM.YYYY').isSame(Date.now(), 'day') && (tt_end - t_now) < 0) {
+            $date.val(moment($date.val(), 'DD.MM.YYYY').add(1, 'days').format('L'));
         }
     }
 /*
@@ -684,7 +627,7 @@ function TimeToFloat(time){
         var to_time_ready_arr = time.split(':');
         result = parseInt(to_time_ready_arr[0])+parseInt(to_time_ready_arr[1])/60;
     }
-    return result;
+    return Math.round(result * 100) / 100;
 }
 
 function timestampToTime(){
@@ -735,4 +678,73 @@ function google_autocomlete(){
             new google.maps.places.Autocomplete(input, options);
         });
     }
+}
+
+function open_bootbox_dialog(url) {
+    window.location.href = url;
+}
+
+//Блокировка времени после значения
+function disable_next(obj, value){
+    var disable_next = false;
+    $(obj).find('option').each(function () {
+        if (disable_next){
+            $(this).attr('disabled','');
+        }
+        if ($(this).text() == value){
+            disable_next = true;
+        }
+    });
+}
+
+function chg_status(order_id){
+    $.post("/orders/chg_status-1/", {order_id:order_id},  function(data) {
+        bootbox.confirm({
+            title: "Изменение статуса доставки в заказе № "+order_id,
+            message: data,
+            callback: function(result){ if(result){send_new_status()} }
+        });
+        // bootbox.alert(data,send_new_status(this));
+    });
+}
+
+function cancel_order(order_id){
+    bootbox.confirm({
+        title: "Отмена заказа № "+order_id,
+        message: "Вы уверены, что хотите отменить заказ № "+order_id+"?",
+        callback: function(result){ if(result){
+            $.post("/orders/chg_status-1/",
+                {order_id:order_id,order_route_id:'',new_status:5,stat_comment:'отмена заказа',order_info_message:' '},
+                function(data) {
+                    bootbox.alert(data,location.reload());
+                });
+        } }
+    });
+
+}
+
+function popup_excel(url) {
+    bootbox.alert({
+        title: "Экспорт в эксель",
+        message: '<iframe style="border:0;" src="/'+url+'/without_menu-1/" height="200" width="100%"  scrolling="no"></iframe>',
+        className: "minWidth",
+        buttons: {
+            'ok': {
+                label: 'Закрыть',
+                className: 'btn-default pull-left'
+            }
+        }
+    });
+}
+
+function chg_courier(order_id){
+    // var order_route_id = $('tr.order_'+order_id).first().attr('rel');
+    $.post("/orders/chg_courier-1/", {order_id:order_id},  function(data) {
+        bootbox.confirm({
+            title: "Изменение курьера в заказе № "+order_id,
+            message: data,
+            callback: function(result){ if(result){send_new_courier()} }
+        });
+        //bootbox.alert(data,send_new_status(this));
+    });
 }

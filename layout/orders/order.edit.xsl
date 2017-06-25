@@ -222,6 +222,11 @@
                 <xsl:for-each select="add_prices/item">
                     <input id="km_{type}" type="hidden" value="{cost_route}"/>
                 </xsl:for-each>
+                <xsl:for-each select="times/node()">
+                    <input id="{name()}_from" type="hidden" value="{from}"/>
+                    <input id="{name()}_to" type="hidden" value="{to}"/>
+                    <input id="{name()}_period" type="hidden" value="{period}"/>
+                </xsl:for-each>
                 <input id="user_fix_price" type="hidden" value="{//@user_fix_price}"/>
             </div>
         </div>

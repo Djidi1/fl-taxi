@@ -164,6 +164,16 @@ class ordersModel extends module_model {
         $sql = 'SELECT id, type, cost_route FROM routes_add_price r';
         return $this->get_assoc_array($sql);
     }
+    public function getTimeCheckList() {
+        $sql = 'SELECT id, type, `from`, `to`, period
+				FROM time_check_list ';
+        $this->query ( $sql );
+        $items = array ();
+        while ( ($row = $this->fetchRowA ()) !== false ) {
+            $items [$row['type']] = $row;
+        }
+        return $items;
+    }
 	public function getSpbStreets(){
 		$sql = 'SELECT id, street_name name FROM spb_streets';
 		return $this->get_assoc_array($sql);
@@ -725,11 +735,12 @@ class ordersProcess extends module_process {
 			$prices = $this->nModel->getPrices();
 			$timer = $this->getTimeForSelect();
             $add_prices = $this->nModel->getAddPrices();
+            $times = $this->nModel->getTimeCheckList();
 			$stores = $this->nModel->getStores($uid);
 			$client_title = $this->nModel->getClientTitle($uid);
 			$this->nView->viewOrderEdit ( $order, $users, $stores, $routes, $pay_types, $statuses,
                 $car_couriers, $timer, $prices, $add_prices, $client_title, $without_menu, $is_single,
-                $user_pay_type,$user_fix_price );
+                $user_pay_type, $user_fix_price, $times );
 		}
 
 		if ($action == 'orderBan') {
@@ -1220,7 +1231,8 @@ class ordersView extends module_View {
 	
 	public function viewOrderEdit($order, $users, $stores, $routes, $pay_types,
                                   $statuses, $car_couriers, $timer, $prices, $add_prices,
-                                  $client_title, $without_menu, $is_single, $user_pay_type,$user_fix_price) {
+                                  $client_title, $without_menu, $is_single, $user_pay_type,
+                                  $user_fix_price, $times) {
 		$this->pXSL [] = RIVC_ROOT . 'layout/orders/order.edit.xsl';
         $Container = $this->newContainer('order');
         $this->addAttr('today', date('d.m.Y'), $Container);
@@ -1241,6 +1253,7 @@ class ordersView extends module_View {
 
 		$this->arrToXML ( $order, $Container, 'order' );
         $this->arrToXML ( $timer, $Container, 'timer' );
+        $this->arrToXML ( $times, $Container, 'times' );
 
         if (count($routes) > 0) {
             $ContainerRoutes = $this->addToNode($Container, 'routes', '');

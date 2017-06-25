@@ -437,6 +437,16 @@ class adminModel extends module_model {
         }
 		return $items;
 	}
+	public function getTimeCheckList() {
+		$sql = 'SELECT id, type, `from`, `to`, period
+				FROM time_check_list ';
+		$this->query ( $sql );
+		$items = array ();
+		while ( ($row = $this->fetchRowA ()) !== false ) {
+			$items [$row['type']] = $row;
+		}
+		return $items;
+	}
 
     public function saveRoutesPrices($km_from,$km_to,$km_cost,$km_neva,$km_kad,$km_geozone,$km_vsevol,$km_target,$user_id){
         if (is_array($km_from)) {
@@ -462,6 +472,16 @@ class adminModel extends module_model {
         $this->query ( $sql );
         $sql = " UPDATE routes_add_price SET cost_route = '$km_target' WHERE type = 'target';";
         $this->query ( $sql );
+    }
+    public function saveTimeCheckList($params){
+        foreach ($params as $type => $param) {
+            $from   = isset($param['from']) ? $param['from'] : '';
+            $to     = isset($param['to']) ? $param['to'] : '';
+            $period = isset($param['period']) ? $param['period'] : '';
+            $sql = "UPDATE time_check_list SET `from` = '$from', `to` = '$to', `period` = '$period' WHERE type = '$type';";
+            $this->query($sql);
+        }
+        return true;
     }
 
 	public function carUpdate($param) {
@@ -769,6 +789,7 @@ class adminProcess extends module_process {
 		$this->regAction ( 'LoginsList', 'Журнал входов', ACTION_GROUP );
 		$this->regAction ( 'logs', 'Журнал изменений', ACTION_GROUP );
 		$this->regAction ( 'price_routes', 'Стоимость за киллометр', ACTION_GROUP );
+		$this->regAction ( 'time_check_list', 'Проверка временных рамок', ACTION_GROUP );
 //		$this->regAction ( 'mails', 'Рассылка писем', ACTION_GROUP );
 		$this->regAction ( 'getTelegramUpdates', 'Обновления телеграмма', ACTION_GROUP );
 		if (DEBUG == 0) {
@@ -1017,7 +1038,21 @@ class adminProcess extends module_process {
 		    $this->nView->viewRoutesPrices($prices,$add_prices);
             $this->updated = true;
         }
-
+        /* Проверка временных рамок */
+        if ($action == 'time_check_list') {
+            if ($this->Vals->getVal ( 'sub_action', 'POST', 'string' ) == 'save'){
+                $params['period_tomarrow'] = $this->Vals->getVal('period_tomarrow', 'POST', 'array');
+                $params['period_today'] = $this->Vals->getVal('period_today', 'POST', 'array');
+                $params['ready_1'] = $this->Vals->getVal('ready_1', 'POST', 'array');
+                $params['ready_2'] = $this->Vals->getVal('ready_2', 'POST', 'array');
+                $params['ready_today'] = $this->Vals->getVal('ready_today', 'POST', 'array');
+                $params['period'] = $this->Vals->getVal('period', 'POST', 'array');
+                $this->nModel->saveTimeCheckList($params);
+            }
+            $times = $this->nModel->getTimeCheckList();
+            $this->nView->viewTimeCheckList($times);
+            $this->updated = true;
+        }
 		/* * Группы * */
 		
 		if ($action == 'groupNew') {
@@ -1108,7 +1143,7 @@ class adminProcess extends module_process {
 			$group_id = $this->Vals->getVal ( 'groupRightsAdmin', 'GET', 'integer' );
 			$actions = $this->nModel->getActions ( $group_id );
 			$group_name = $this->nModel->getGroupName ( $group_id );
-			$this->nView->viewGroupRightAdmin ( $actions, $group_name, $group_name, $group_id );
+			$this->nView->viewGroupRightAdmin ( $actions, $group_name, $group_id );
 			$this->updated = true;
 		}
 		/* * Конец Группы * */
@@ -1345,6 +1380,16 @@ class adminView extends module_view {
 
 		return true;
 	}
+	public function viewTimeCheckList($times) {
+		$this->pXSL [] = RIVC_ROOT . 'layout/admin/times.list.xsl';
+		$Container = $this->newContainer ( 'timeslist' );
+//		foreach ( $prices as $item ) {
+//			$this->arrToXML ( $item, $ContainerGroups, 'item' );
+//		}
+        $this->arrToXML ( $times, $Container, 'times' );
+
+		return true;
+	}
 
 	public function viewNewGroup() {
 		$this->pXSL [] = RIVC_ROOT . 'layout/users/group.new.xsl';
@@ -1392,13 +1437,12 @@ class adminView extends module_view {
 		return true;
 	}
 	
-	public function viewGroupRightAdmin(actionColl $actions, $group_name, $group_name, $group_id) {
+	public function viewGroupRightAdmin(actionColl $actions, $group_name, $group_id) {
 		$this->pXSL [] = RIVC_ROOT . 'layout/users/group.rights.Admin.xsl';
 		$Container = $this->newContainer ( 'grouprights' );
 		$actIterator = $actions->getIterator ();
 		$ContainerAct = $this->addToNode ( $Container, 'actions', '' );
 		$this->addAttr ( 'group_id', $group_id, $ContainerAct );
-		$this->addAttr ( 'group_name', $group_name, $ContainerAct );
 		$this->addAttr ( 'group_name', $group_name, $ContainerAct );
 		/* moduleAction */
 		//$action = new moduleAction();
