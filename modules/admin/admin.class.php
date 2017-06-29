@@ -447,6 +447,17 @@ class adminModel extends module_model {
 		}
 		return $items;
 	}
+	public function getGoodsPriceList() {
+		$sql = 'SELECT p.*, t.goods_name
+				FROM goods_cond_prices p 
+				LEFT JOIN goods_types t ON p.goods_id = t.id';
+		$this->query ( $sql );
+		$items = array ();
+		while ( ($row = $this->fetchRowA ()) !== false ) {
+			$items [] = $row;
+		}
+		return $items;
+	}
 
     public function saveRoutesPrices($km_from,$km_to,$km_cost,$km_neva,$km_kad,$km_geozone,$km_vsevol,$km_target,$user_id){
         if (is_array($km_from)) {
@@ -479,6 +490,18 @@ class adminModel extends module_model {
             $to     = isset($param['to']) ? $param['to'] : '';
             $period = isset($param['period']) ? $param['period'] : '';
             $sql = "UPDATE time_check_list SET `from` = '$from', `to` = '$to', `period` = '$period' WHERE type = '$type';";
+            $this->query($sql);
+        }
+        return true;
+    }
+ public function saveGoodsPriceList($params){
+        foreach ($params['id'] as $id) {
+            $condition = $params['condition'][$id];
+            $value = $params['value'][$id];
+            $price = $params['price'][$id];
+            $fixed = isset($params['fixed'][$id])?$params['fixed'][$id]:'0';
+            $mult = $params['mult'][$id];
+            $sql = "UPDATE goods_cond_prices SET `condition` = '$condition', `value` = '$value', `price` = '$price', `fixed` = '$fixed', `mult` = '$mult' WHERE id = '$id';";
             $this->query($sql);
         }
         return true;
@@ -790,6 +813,7 @@ class adminProcess extends module_process {
 		$this->regAction ( 'logs', 'Журнал изменений', ACTION_GROUP );
 		$this->regAction ( 'price_routes', 'Стоимость за киллометр', ACTION_GROUP );
 		$this->regAction ( 'time_check_list', 'Проверка временных рамок', ACTION_GROUP );
+		$this->regAction ( 'goods_price_list', 'Настройка стоимости за перевозку товаров', ACTION_GROUP );
 //		$this->regAction ( 'mails', 'Рассылка писем', ACTION_GROUP );
 		$this->regAction ( 'getTelegramUpdates', 'Обновления телеграмма', ACTION_GROUP );
 		if (DEBUG == 0) {
@@ -1051,6 +1075,22 @@ class adminProcess extends module_process {
             }
             $times = $this->nModel->getTimeCheckList();
             $this->nView->viewTimeCheckList($times);
+            $this->updated = true;
+        }
+
+        /* Справочник типов товара */
+        if ($action == 'goods_price_list') {
+            if ($this->Vals->getVal ( 'sub_action', 'POST', 'string' ) == 'save'){
+                $params['id'] = $this->Vals->getVal('id', 'POST', 'array');
+                $params['condition'] = $this->Vals->getVal('condition', 'POST', 'array');
+                $params['value'] = $this->Vals->getVal('value', 'POST', 'array');
+                $params['price'] = $this->Vals->getVal('price', 'POST', 'array');
+                $params['fixed'] = $this->Vals->getVal('fixed', 'POST', 'array');
+                $params['mult'] = $this->Vals->getVal('mult', 'POST', 'array');
+                $this->nModel->saveGoodsPriceList($params);
+            }
+            $prices = $this->nModel->getGoodsPriceList();
+            $this->nView->viewGoodsPriceList($prices);
             $this->updated = true;
         }
 		/* * Группы * */
@@ -1383,11 +1423,15 @@ class adminView extends module_view {
 	public function viewTimeCheckList($times) {
 		$this->pXSL [] = RIVC_ROOT . 'layout/admin/times.list.xsl';
 		$Container = $this->newContainer ( 'timeslist' );
-//		foreach ( $prices as $item ) {
-//			$this->arrToXML ( $item, $ContainerGroups, 'item' );
-//		}
         $this->arrToXML ( $times, $Container, 'times' );
-
+		return true;
+	}
+	public function viewGoodsPriceList($prices) {
+		$this->pXSL [] = RIVC_ROOT . 'layout/admin/goods.prices.list.xsl';
+		$Container = $this->newContainer ( 'priceslist' );
+		foreach ( $prices as $item ) {
+			$this->arrToXML ( $item, $Container, 'item' );
+		}
 		return true;
 	}
 

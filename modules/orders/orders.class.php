@@ -21,6 +21,7 @@ class ordersModel extends module_model {
 			if (isset($row['to_time'])) $row['to_time'] = substr($row['to_time'],0,5);
 			if (isset($row['to_time_end'])) $row['to_time_end'] = substr($row['to_time_end'],0,5);
 			if (isset($row['to_time_ready'])) $row['to_time_ready'] = substr($row['to_time_ready'],0,5);
+			if (isset($row['to_time_ready_end'])) $row['to_time_ready_end'] = substr($row['to_time_ready_end'],0,5);
             if (isset($row['date'])) $row['date'] = $this->dateToRuFormat($row['date']);
 			$items[] = $row;
 		}
@@ -133,7 +134,7 @@ class ordersModel extends module_model {
 		$sql = 'SELECT r.id id_route, `to`,to_region,to_AOGUID,to_house,to_corpus,to_appart,
 					  to_fio,to_phone,to_coord,from_coord,lenght,cost_route,cost_tovar,cost_car,
 					  `to_time`,`to_time_end`,r.`comment`, s.status, s.id status_id, r.pay_type, 
-					  r.to_time_ready
+					  r.to_time_ready, r.to_time_ready_end, r.goods_type, r.goods_val
 				FROM orders_routes r
 				LEFT JOIN orders_status s ON s.id = r.id_status
 				WHERE id_order = '.$order_id;
@@ -173,6 +174,21 @@ class ordersModel extends module_model {
             $items [$row['type']] = $row;
         }
         return $items;
+    }
+    public function getGoodsPriceList() {
+        $sql = 'SELECT p.*, t.goods_name
+				FROM goods_cond_prices p 
+				LEFT JOIN goods_types t ON p.goods_id = t.id';
+        $this->query ( $sql );
+        $items = array ();
+        $goods = array ();
+        while ( ($row = $this->fetchRowA ()) !== false ) {
+            $items [] = $row;
+        }
+        foreach ($items as $item){
+            $goods[$item['goods_id']] = $item;
+        }
+        return array($items,$goods);
     }
 	public function getSpbStreets(){
 		$sql = 'SELECT id, street_name name FROM spb_streets';
@@ -233,6 +249,7 @@ class ordersModel extends module_model {
                        r.to_time,
                        r.to_time_end,
                        r.to_time_ready,
+                       r.to_time_ready_end,
                        CONCAT(r.`to`,\', д.\',r.`to_house`,/*\', корп.\',r.`to_corpus`,*/\', кв.\',r.`to_appart`) to_addr,
                        r.to_fio,
                        r.to_phone,
@@ -331,6 +348,7 @@ class ordersModel extends module_model {
                        o.date, ';
 		if ($user_id == 0) {
 			$sql .= '   r.to_time_ready, ';
+			$sql .= '   r.to_time_ready_end, ';
 		}
 	    $sql .= '      r.to_time,
                        r.to_time_end,
@@ -528,10 +546,11 @@ class ordersModel extends module_model {
 							\''.$params ['to_appart'][$key].'\',\''.$params ['to_fio'][$key].'\',\''.$params ['to_phone'][$key].'\',
 							\''.$params ['cost_route'][$key].'\',\''.$params ['cost_tovar'][$key].'\',\''.$params ['cost_car'][$key].'\',
 							\''.$params ['to_time'][$key].'\',\''.$params ['to_time_end'][$key].'\',\''.$params ['comment'][$key].'\',
-							\''.$params ['to_time_ready'][$key].'\',\''.$params ['pay_type'][$key].'\',\''.$params ['status'][$key].'\'	)';
+							\''.$params ['to_time_ready'][$key].'\',\''.$params ['to_time_ready_end'][$key].'\',\''.$params ['pay_type'][$key].'\',
+							\''.$params ['status'][$key].'\',\''.$params ['goods_type'][$key].'\',\''.$params ['goods_val'][$key].'\'	)';
 			}
 			if ($sql_values != '') {
-                $sql = "INSERT INTO orders_routes (id_order,`to`,`to_region`,`to_AOGUID`,`to_house`,`to_corpus`,`to_appart`,`to_fio`,`to_phone`,`cost_route`,`cost_tovar`,`cost_car`,`to_time`,`to_time_end`,`comment`, `to_time_ready`, `pay_type`, `id_status`) VALUES $sql_values";
+                $sql = "INSERT INTO orders_routes (id_order,`to`,`to_region`,`to_AOGUID`,`to_house`,`to_corpus`,`to_appart`,`to_fio`,`to_phone`,`cost_route`,`cost_tovar`,`cost_car`,`to_time`,`to_time_end`,`comment`, `to_time_ready`, `to_time_ready_end`, `pay_type`, `id_status`, goods_type, goods_val) VALUES $sql_values";
                 $this->query($sql);
             }
 		}
@@ -736,11 +755,12 @@ class ordersProcess extends module_process {
 			$timer = $this->getTimeForSelect();
             $add_prices = $this->nModel->getAddPrices();
             $times = $this->nModel->getTimeCheckList();
+            list($g_price, $goods) = $this->nModel->getGoodsPriceList();
 			$stores = $this->nModel->getStores($uid);
 			$client_title = $this->nModel->getClientTitle($uid);
 			$this->nView->viewOrderEdit ( $order, $users, $stores, $routes, $pay_types, $statuses,
                 $car_couriers, $timer, $prices, $add_prices, $client_title, $without_menu, $is_single,
-                $user_pay_type, $user_fix_price, $times );
+                $user_pay_type, $user_fix_price, $times, $g_price, $goods );
 		}
 
 		if ($action == 'orderBan') {
@@ -763,6 +783,7 @@ class ordersProcess extends module_process {
 			$params['to_region'] = $this->Vals->getVal ( 'to_region', 'POST', 'array' );
 			$params['to_AOGUID'] = $this->Vals->getVal ( 'to_AOGUID', 'POST', 'array' );
 			$params['to_time_ready'] = $this->Vals->getVal ( 'to_time_ready', 'POST', 'array' );
+			$params['to_time_ready_end'] = $this->Vals->getVal ( 'to_time_ready_end', 'POST', 'array' );
 			$params['to_house'] = $this->Vals->getVal ( 'to_house', 'POST', 'array' );
 			$params['to_corpus'] = $this->Vals->getVal ( 'to_corpus', 'POST', 'array' );
 			$params['to_appart'] = $this->Vals->getVal ( 'to_appart', 'POST', 'array' );
@@ -773,6 +794,8 @@ class ordersProcess extends module_process {
 			$params['cost_route'] = $this->Vals->getVal ( 'cost_route', 'POST', 'array' );
 			$params['cost_tovar'] = $this->Vals->getVal ( 'cost_tovar', 'POST', 'array' );
 			$params['cost_car'] = $this->Vals->getVal ( 'cost_car', 'POST', 'array' );
+			$params['goods_type'] = $this->Vals->getVal ( 'goods_type', 'POST', 'array' );
+			$params['goods_val'] = $this->Vals->getVal ( 'goods_val', 'POST', 'array' );
 			$params['pay_type'] = $this->Vals->getVal ( 'pay_type', 'POST', 'array' );
 			$params['comment'] = $this->Vals->getVal ( 'comment', 'POST', 'array' );
 			$params['status'] = $this->Vals->getVal ( 'status', 'POST', 'array' );
@@ -1005,10 +1028,10 @@ class ordersProcess extends module_process {
 
 	public function getTimeForSelect(){
         $time_arr = array();
-        for ($h = 8; $h <= 23; $h++) {
+        for ($h = 7; $h <= 23; $h++) {
             if ($h < 23){
-                for ($i= 0; $i <= 11; $i++){
-                    $time_arr[] = substr('0'.$h,-2).':'.substr('0'.($i*5),-2);
+                for ($i= 0; $i <= 5; $i++){
+                    $time_arr[] = substr('0'.$h,-2).':'.substr('0'.($i*10),-2);
                 }
             }else{
                 $time_arr[] = $h.':00';
@@ -1232,7 +1255,7 @@ class ordersView extends module_View {
 	public function viewOrderEdit($order, $users, $stores, $routes, $pay_types,
                                   $statuses, $car_couriers, $timer, $prices, $add_prices,
                                   $client_title, $without_menu, $is_single, $user_pay_type,
-                                  $user_fix_price, $times) {
+                                  $user_fix_price, $times, $g_price, $goods) {
 		$this->pXSL [] = RIVC_ROOT . 'layout/orders/order.edit.xsl';
         $Container = $this->newContainer('order');
         $this->addAttr('today', date('d.m.Y'), $Container);
@@ -1265,6 +1288,14 @@ class ordersView extends module_View {
             $this->addToNode($ContainerRoutes, 'item', 'fake');
         }
 
+        $ContainerGprice = $this->addToNode ( $Container, 'g_price', '' );
+        foreach ( $g_price as $item ) {
+            $this->arrToXML ( $item, $ContainerGprice, 'item' );
+        }
+        $ContainerGoods = $this->addToNode ( $Container, 'goods', '' );
+        foreach ( $goods as $item ) {
+            $this->arrToXML ( $item, $ContainerGoods, 'item' );
+        }
 		$ContainerClient = $this->addToNode ( $Container, 'client', '' );
 		foreach ( $client_title as $item ) {
 			$this->arrToXML ( $item, $ContainerClient, 'item' );

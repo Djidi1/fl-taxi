@@ -147,6 +147,16 @@
                                 <i class="fa fa-money" aria-hidden="true"> </i> Стоимость
                             </a>
                         </li>
+                        <li>
+                            <a class="btn btn-default btn-xs" href="/admin/time_check_list-1/">
+                                <i class="fa fa-clock-o" aria-hidden="true"> </i> Времена
+                            </a>
+                        </li>
+                        <li>
+                            <a class="btn btn-default btn-xs" href="/admin/goods_price_list-1/">
+                                <i class="fa fa-archive" aria-hidden="true"> </i> Товары
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </xsl:if>

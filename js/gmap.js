@@ -313,11 +313,17 @@ function calc_route(recalc_cost, dest_point) {
                         // Устанавливаем стоимость по маршруту и выполняем перерасчет
                         var cost_route = $('.cost_route').eq(i).get();
 
+
+
                         var result_cost = parseFloat(cost_in_spb)
                             + parseFloat(cost_km_out)
                             + parseFloat(cost_Geozone)
                             + parseFloat(cost_Vsevol)
                             + parseFloat(cost_target);
+
+                        var add_money = getAddMoney($('.routes-block').eq(i).get(), result_cost);
+                        moveList += ' за товар: ' + add_money + ' р ' + '<br/>';
+                        result_cost = result_cost + add_money;
 
                         $(cost_route).val(result_cost);
                         re_calc(cost_route);
@@ -344,6 +350,37 @@ function calc_route(recalc_cost, dest_point) {
             }
         });
     }
+}
+function getAddMoney(obj, result_cost){
+    var boxes = parseInt($(obj).find('input.goods_val').val());
+    var cost_route = result_cost;
+    var goods_id = $(obj).find('select.goods_type').val();
+    var add_money = 0;
+    $('input[goods_id='+goods_id+']').each(function(){
+        var price = parseInt($(this).attr('price'));
+        var value = parseInt($(this).val());
+        var mult = $(this).attr('mult');
+        var fixed = $(this).attr('fixed');
+        var cond = $(this).attr('condition');
+        if (cond == '>' && boxes > value){
+            if (fixed == 1) {
+                add_money = add_money + price;
+            }else{
+                add_money = add_money + (boxes - value) * price;
+            }
+            if (mult > 1){
+                add_money = add_money + cost_route * (mult - 1);
+            }
+            // console.log('>')
+        }
+        if (cond == '<' && boxes < value){
+            console.log('<')
+        }
+        if (cond == '=' && boxes == value){
+            console.log('=')
+        }
+    });
+    return add_money;
 }
 function getDestCoordsFromYandex(dest_point){
     $.get('https://geocode-maps.yandex.ru/1.x/?format=json&geocode='+dest_point, function(data){

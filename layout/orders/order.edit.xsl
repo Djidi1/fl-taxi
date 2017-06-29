@@ -216,6 +216,9 @@
                 </div>
             </form>
             <div style="display:none">
+                <xsl:for-each select="g_price/item">
+                    <input id="g_price_{id}" class="g_prices" type="hidden" value="{value}" goods_id="{goods_id}" condition="{condition}" price="{price}" fixed="{fixed}" mult="{mult}" rel="{goods_name}"/>
+                </xsl:for-each>
                 <xsl:for-each select="prices/item">
                     <input id="km_{id}" class="km_cost" type="hidden" value="{km_cost}" km_from="{km_from}" km_to="{km_to}"/>
                 </xsl:for-each>
@@ -388,33 +391,32 @@
                 <span class="order-add-title text-success">
                     Что доставляем?
                 </span>
-                <xsl:if test="//@user_pay_type > 0">
-                    <input type="hidden" name="pay_type[]" value="{//@user_pay_type}" />
-                </xsl:if>
-                <select class="order-route-data pay_type" name="pay_type[]" title="Тип оплаты курьеру" onchange="re_calc(this)" required="">
-                    <xsl:if test="//@user_pay_type > 0">
-                        <xsl:attribute name="disabled">disabled</xsl:attribute>
-                    </xsl:if>
-                    <xsl:variable name="pay_type" select="pay_type"/>
-                    <xsl:variable name="user_pay_type" select="//@user_pay_type"/>
+                <select class="order-route-data goods_type" name="goods_type[]" title="Тип товара" onchange="calc_route(1);" required="">
+                    <xsl:variable name="goods_type" select="goods_type"/>
                     <option value=""> </option>
-                    <xsl:for-each select="../../pay_types/item">
-                        <option value="{id}">
-                            <xsl:if test="id = $pay_type or (not($pay_type) and $user_pay_type = id)">
+                    <xsl:for-each select="../../goods/item">
+                        <option value="{goods_id}">
+                            <xsl:if test="goods_id = $goods_type">
                                 <xsl:attribute name="selected">selected</xsl:attribute>
                             </xsl:if>
-                            <xsl:value-of select="pay_type"/>
+                            <xsl:value-of select="goods_name"/>
                         </option>
                     </xsl:for-each>
                 </select>
             </div>
-            <div class="form-control" style="width: 20%;">
+            <div class="form-control" style="width: 10%;">
+                <span class="order-add-title text-success">
+                    Кол-во
+                </span>
+                <input type="number" class="order-route-data number goods_val" name="goods_val[]" title="Количество товара" value="{goods_val}" onchange="calc_route(1);" required=""/>
+            </div>
+            <div class="form-control" style="width: 15%;">
                 <span class="order-add-title text-success">
                     Инкассация
                 </span>
                 <input type="text" class="order-route-data number cost_tovar" name="cost_tovar[]" title="Стоимость товара" value="{cost_tovar}" onkeyup="re_calc(this)" required=""/>
             </div>
-            <div class="form-control" style="width: 20%;">
+            <div class="form-control" style="width: 15%;">
                 <span class="order-add-title text-success">
                     Цена доставки
                 </span>
