@@ -290,6 +290,10 @@ function re_calc(obj){
     var cost_route = $(route_row).find('.cost_route').val();
     var pay_type = $(route_row).find('.pay_type').val();
     var inkass = 0;
+    //Если инкассация больше 0 то автоматически ставиться оплата доставки "По Договору"
+    if (cost_tovar > 0) {
+        $(route_row).find('.pay_type').val('3');
+    }
     if (pay_type == 2){
         inkass = Number(cost_tovar)+Number(cost_route);
     }else{
@@ -387,10 +391,13 @@ function test_time_routes(obj){
 }
 function test_time_all_routes(){
     var order_edited = $('#order_edited').val();
+    var time_edited = $('#time_edited').val();
     var order_id = $('#order_id').val();
 
     // Запускаем проверку только, если это новый заказ или если в нем было что-то изменено (кроме примечания)
-    if (order_edited == 1 || order_id == 0 ) {
+    // Или изменено только время
+    // if ((order_edited == 1 || order_id == 0) && time_edited == 1) {
+    if (time_edited == 1 || order_id == 0) {
         // Проверка времени готовности
         var first_time = '';
         var prev_time = '';

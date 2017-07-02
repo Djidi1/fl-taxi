@@ -363,9 +363,10 @@ class ordersModel extends module_model {
                        s.status,
 					   cc.fio fio_car,
 					   r.cost_route,
-					   r.cost_tovar,
+					  /* r.cost_tovar,*/
 					   (CASE 
-					        WHEN r.pay_type = 1 and r.cost_tovar = 0 THEN r.cost_route
+					        WHEN r.pay_type = 1 THEN r.cost_route /* Если стоит полата доставки в магазине , то стоимость доставки - сумму которую забрал курьер в магазине  должна быть в выгрузке в графе инкассация!  */
+					      /*  WHEN r.pay_type = 1 and r.cost_tovar = 0 THEN r.cost_route */
 					        WHEN r.pay_type = 2 THEN r.cost_route + r.cost_tovar
 					        ELSE r.cost_tovar
 					    END) AS inkass,
@@ -725,14 +726,13 @@ class ordersProcess extends module_process {
             list($from, $to) = $this->get_post_date('all');
             if ($sub_action == 'excel') {
                 if ($logist == 1) {
-                    $titles = array('номер заказа', 'дата', 'время готовности', 'время доставки', 'адрес приема', 'компания', 'адрес доставки', 'телефон', 'ФИО получателя', 'статус заказа', 'курьер', 'стоимость доставки', 'стоимость цветов', 'инкассация', '% инкас.', 'заработок курьера', 'заработок компании', 'примечания');
+                    $titles = array('номер заказа', 'дата', 'время готовности', 'время доставки', 'адрес приема', 'компания', 'адрес доставки', 'телефон', 'ФИО получателя', 'статус заказа', 'курьер', 'стоимость доставки', /*'стоимость цветов',*/ 'инкассация', '% инкас.', 'заработок курьера', 'заработок компании', 'примечания');
                     $orders = $this->nModel->getOrdersListExcel($from, $to);
                 }else{
-                    $titles = array('номер заказа', 'дата', 'время доставки', 'адрес приема', 'компания', 'адрес доставки', 'телефон', 'ФИО получателя', 'статус заказа', 'курьер', 'стоимость доставки', 'стоимость цветов', 'инкассация', '% инкас.', 'примечания');
+                    $titles = array('номер заказа', 'дата', 'время доставки', 'адрес приема', 'компания', 'адрес доставки', 'телефон', 'ФИО получателя', 'статус заказа', 'курьер', 'стоимость доставки', /*'стоимость цветов',*/ 'инкассация', '% инкас.', 'примечания');
                     $orders = $this->nModel->getOrdersListExcel($from, $to, $user_id);
                 }
                 $this->nModel->exportToExcel($titles,$orders);
-                stop($orders);
             }
             $this->nView->viewExcelDialog($from, $to, $logist);
         }

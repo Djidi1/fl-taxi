@@ -234,6 +234,7 @@
             </div>
         </div>
         <input id="order_edited" type="hidden" value="0"/>
+        <input id="time_edited" type="hidden" value="0"/>
         <input id="order_id" type="hidden" value="{order/id}"/>
         <script>
             $('FORM').on('keyup keypress', function(e) {
@@ -242,6 +243,9 @@
             });
             $('input, select').on('change', function() {
                 $('#order_edited').val(1);
+            });
+            $('select.to_time_ready, select.to_time_ready_end, select.to_time, select.to_time_end, select.to_time_target').on('change', function() {
+                $('#time_edited').val(1);
             });
         </script>
     </xsl:template>
