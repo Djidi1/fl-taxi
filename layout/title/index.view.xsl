@@ -115,7 +115,7 @@
                         </div>
                         <div class="form-control" style="width: 30%;">
                             <span class="order-add-title text-info">дом/корп.</span>
-                            <input type="text" class="order-route-data to_house number" name="to_house[]" title="Дом/Корпус" onchange="calc_route(1)" autocomplete="off" required=""/>
+                            <select type="text" class="order-route-data to_house number" name="to_house[]" title="Дом/Корпус" onchange="calc_route(1)" autocomplete="off" required="" AOGUID=""/>
                         </div>
                     </div>
                 </div>
@@ -130,7 +130,7 @@
                         </div>
                         <div class="form-control" style="width: 30%;">
                             <span class="order-add-title text-info">дом/корп.</span>
-                            <input type="text" class="order-route-data to_house number" name="to_house[]" title="Дом/Корпус" onchange="calc_route(1)" autocomplete="off" required=""/>
+                            <select type="text" class="order-route-data to_house number" name="to_house[]" title="Дом/Корпус" onchange="calc_route(1)" autocomplete="off" required="" AOGUID=""/>
                         </div>
                     </div>
                 </div>

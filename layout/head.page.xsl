@@ -40,7 +40,8 @@
 					<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 						<ul class="nav navbar-nav">
 							<li>
-								<a class="callme_viewform" href="#">Зарегистрироваться</a>
+								<!--<a class="callme_viewform" href="#">Зарегистрироваться</a>-->
+								<a class="text-danger" onclick="showThem('register_pop'); return false;"><b>Зарегистрироваться</b></a>
 							</li>
 							<li>
 								<a href="/pages/view-49/">Условия сотрудничества</a>
@@ -61,6 +62,42 @@
 					</div><!-- /.navbar-collapse -->
 				</div><!-- /.container-fluid -->
 			</nav>
+			<div id="register_pop" style="display: none;">
+				<form id="register-form" action="/?register" method="post" name="form">
+					<div class="module_login">
+						<div class="boxIndent">
+							<div class="wrapper">
+								<p class="alert alert-info">Для регистрации на сайте заполните, пожалуйста, представленную форму и мы вышлем СМС с кодом подтверждения для доступа ко всем функциям сайта.</p>
+								<p id="form-login-name">
+									<label for="modlgn-name">Ваше имя</label>
+									<input id="modlgn-name" type="text" name="name" class="form-control" size="18" value="" onblur="" onfocus=""/>
+								</p>
+								<p id="form-login-phone">
+									<label for="modlgn-phone">Номер телефона</label>
+									<input id="modlgn-phone" type="text" name="phone" class="form-control" size="18" value="" onblur="" onfocus=""/>
+								</p>
+								<div class="wrapper">
+									<div class="create" style="text-align: right">
+										<span class="btn btn-success" onclick="reg_form_submit(this)">Зарегистрироваться</span>
+										<!--<span class="btn btn-success" onclick="reg_form_submit()">Зарегистрироваться</span>-->
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+				<script>
+					function reg_form_submit(obj) {
+						bootbox.hideAll()
+						var $form = $(obj).closest('form');
+						var formData = $form.serialize();
+						$.post($form.attr("action"), formData, function(data) {
+							bootbox.alert(data);
+						});
+						return false;
+					};
+				</script>
+			</div>
 			<div class="mobile-sub-menu">
 				<div class="slogan">Логистика для цветочных магазинов</div>
 				<div class="moduletable_LoginForm login-mobile">

@@ -16,6 +16,7 @@ include CORE_ROOT . 'classes/autch.class.php';
 include CORE_ROOT . 'classes/files.class.php';
 include CORE_ROOT . 'classes/formgen.class.php';
 include CORE_ROOT . 'classes/system.class.php';
+include CORE_ROOT . 'classes/sms.ru.php';
 
 //$_SESSION['DEBUG'] = 1;
 

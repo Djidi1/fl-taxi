@@ -35,6 +35,12 @@ class titleModel extends module_model {
         $sql = 'SELECT id, type, cost_route FROM routes_add_price r';
         return $this->get_assoc_array($sql);
     }
+    public function createUser($name, $phone, $pin_code, $sms_id){
+        $passi = md5($pin_code);
+        $sql = "INSERT INTO users (name, email, login, pass, date_reg, isban, prior, title, phone, phone_mess, fixprice_inside, inkass_proc, pay_type, sms_id) 
+                VALUES ('$name','','$phone','$passi',NOW(),'0','0','$name','$phone','','','','','$sms_id')";
+        return $this->query($sql);
+    }
 }
 class titleProcess extends module_process {
 	public function __construct($modName) {
@@ -54,6 +60,7 @@ class titleProcess extends module_process {
 		$this->mod_id = $sysMod->id;
 		$this->nView = new titleView ( $this->modName, $this->sysMod );
 		$this->regAction ( 'view', 'Главная страница', ACTION_GROUP );
+		$this->regAction ( 'register', 'Регистрация', ACTION_PUBLIC );
 		if (DEBUG == 0) {
 			$this->registerActions ( 1 );
 		}
@@ -79,6 +86,23 @@ class titleProcess extends module_process {
         $this->updated = true;
 
 		/********************************************************************************/
+		if ($action == 'register'){
+            $name = $this->Vals->getVal ( 'name', 'POST', 'string' );
+            $phone = $this->Vals->getVal ( 'phone', 'POST', 'string' );
+            $pin_code = mt_rand(1000, 9999);
+            $sms_id = $this->send_sms($phone,$pin_code);
+            if (!$sms_id) {
+                echo "<div class='alert alert-danger'>Ошибка отправки СМС.</div>";
+            }else {
+                $result = $this->nModel->createUser($name, $phone, $pin_code, $sms_id);
+                if (!$result) {
+                    echo "<div class='alert alert-warning'>Пользователь с таким телефоном уже зарегестрирован.</div>";
+                }
+                echo "<div class='alert alert-success'>$name, спасибо за регистрацию. Временный пароль $pin_code для входа отправлен на номер: $phone</div>";
+            }
+            exit();
+        }
+
 		if ($action == 'view') {
             $news = $this->nModel->getNewsList(3);
             $prices = $this->nModel->getPrices();
@@ -90,6 +114,29 @@ class titleProcess extends module_process {
 		/********************************************************************************/
 		
 	}
+	function send_sms($phone, $pin_code){
+        $smsru = new SMSRU('69da81b5-ee1e-d004-a1aa-ac83d2687954'); // Ваш уникальный программный ключ, который можно получить на главной странице
+
+        $data = new stdClass();
+        $data->to = $phone;
+        $data->text = "Для доступа к fl-taxi.ru используйте логин $phone и пароль $pin_code"; // Текст сообщения
+// $data->from = ''; // Если у вас уже одобрен буквенный отправитель, его можно указать здесь, в противном случае будет использоваться ваш отправитель по умолчанию
+// $data->time = time() + 7*60*60; // Отложить отправку на 7 часов
+// $data->translit = 1; // Перевести все русские символы в латиницу (позволяет сэкономить на длине СМС)
+// $data->test = 1; // Позволяет выполнить запрос в тестовом режиме без реальной отправки сообщения
+// $data->partner_id = '1'; // Можно указать ваш ID партнера, если вы интегрируете код в чужую систему
+        $data->test = 1; // Позволяет выполнить запрос в тестовом режиме без реальной отправки сообщения
+        $sms = $smsru->send_one($data); // Отправка сообщения и возврат данных в переменную
+
+        if ($sms->status == "OK") { // Запрос выполнен успешно
+            echo "<div class='alert alert-success'>Сообщение отправлено успешно.</div>";
+//            echo "ID сообщения: $sms->sms_id.";
+            return $sms->sms_id;
+        } else {
+            echo "<div class='alert alert-success'>Сообщение не отправлено. <br/>Код ошибки: $sms->status_code. <br/>Текст ошибки: $sms->status_text.</div>";
+            return false;
+        }
+    }
 }
 /*************************************/
 class titleView extends module_View {
