@@ -74,7 +74,7 @@
 								</p>
 								<p id="form-login-phone">
 									<label for="modlgn-phone">Номер телефона</label>
-									<input id="modlgn-phone" type="text" name="phone" class="form-control" size="18" value="" onblur="" onfocus=""/>
+									<input id="modlgn-phone" type="text" name="phone" class="form-control phone-number" maxlength="11"  placeholder="8XXXXXXXXXX"/>
 								</p>
 								<div class="wrapper">
 									<div class="create" style="text-align: right">

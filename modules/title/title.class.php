@@ -39,7 +39,13 @@ class titleModel extends module_model {
         $passi = md5($pin_code);
         $sql = "INSERT INTO users (name, email, login, pass, date_reg, isban, prior, title, phone, phone_mess, fixprice_inside, inkass_proc, pay_type, sms_id) 
                 VALUES ('$name','','$phone','$passi',NOW(),'0','0','$name','$phone','','','','','$sms_id')";
-        return $this->query($sql);
+        $test = $this->query($sql);
+        if ($test) {
+            $user_id = $this->insertID();
+            $sql = "INSERT INTO `groups_user` (`group_id`, `user_id`) VALUES ('2', '$user_id')";
+            $test = $this->query($sql);
+        }
+        return $test;
     }
 }
 class titleProcess extends module_process {
@@ -93,7 +99,7 @@ class titleProcess extends module_process {
             $sms_id = $this->send_sms($phone,$pin_code);
             if (!$sms_id) {
                 echo "<div class='alert alert-danger'>Ошибка отправки СМС.</div>";
-            }else {
+            } else {
                 $result = $this->nModel->createUser($name, $phone, $pin_code, $sms_id);
                 if (!$result) {
                     echo "<div class='alert alert-warning'>Пользователь с таким телефоном уже зарегестрирован.</div>";
@@ -125,7 +131,7 @@ class titleProcess extends module_process {
 // $data->translit = 1; // Перевести все русские символы в латиницу (позволяет сэкономить на длине СМС)
 // $data->test = 1; // Позволяет выполнить запрос в тестовом режиме без реальной отправки сообщения
 // $data->partner_id = '1'; // Можно указать ваш ID партнера, если вы интегрируете код в чужую систему
-        $data->test = 1; // Позволяет выполнить запрос в тестовом режиме без реальной отправки сообщения
+//        $data->test = 1; // Позволяет выполнить запрос в тестовом режиме без реальной отправки сообщения
         $sms = $smsru->send_one($data); // Отправка сообщения и возврат данных в переменную
 
         if ($sms->status == "OK") { // Запрос выполнен успешно

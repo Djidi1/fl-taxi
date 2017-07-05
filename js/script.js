@@ -19,10 +19,13 @@ function showThem(id){
 
 function opendialog(id,title,height,width){
 	var div_dialog = $('#'+id).html();
-	bootbox.dialog({
+	var box = bootbox.dialog({
 		  message: div_dialog,
 		  title: title
 	});
+    box.bind('shown.bs.modal', function(){
+        add_phone_masks();
+    });
 }
 
 function open_text(data,title) {
