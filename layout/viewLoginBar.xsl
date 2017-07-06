@@ -34,12 +34,15 @@
                                     </p>
                                 </xsl:if>
                                 <p id="form-login-username">
-                                    <label for="modlgn-username">Логин</label>
-                                    <input id="modlgn-username" type="text" name="username" class="form-control" size="18" value="" onblur="" onfocus=""/>
+                                    <label for="modlgn-username">Логин <span class="text-muted">(номер телефона)</span></label>
+                                    <input id="modlgn-username" type="text" name="username" class="form-control" size="18" value=""/>
                                 </p>
                                 <p id="form-login-password">
                                     <label for="modlgn-passwd">Пароль</label>
-                                    <input id="modlgn-passwd" type="password" name="userpass" class="form-control" size="18" value="" onblur="" onfocus=""/>
+                                    <input id="modlgn-passwd" type="password" name="userpass" class="form-control" size="18" value=""/>
+                                </p>
+                                <p id="form-login-password">
+                                    <span class="btn btn-link" onclick="recover_password()">Забыли пароль?</span>
                                 </p>
                                 <div class="wrapper">
                                     <div class="create" style="text-align: right">

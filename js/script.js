@@ -2,14 +2,15 @@ function show_rights(test){
 	if (test) {$("table#grouprights tr.more").show();
 	} else {$("table#grouprights tr.more").hide(); }
 }
-function open_dialog(url,title,height,width) {
+function open_dialog(url, title) {
 	var round_id = 'dm_'+getRandomInt(1,9999);
 	var div_dialog = '<div id="'+round_id+'"></div>';
 	bootbox.dialog({message: div_dialog,title: title});
 	$.post(url + "ajax-1/" , {},  function(data) {
-		$('#'+round_id).html(data);
+		$dialog = $('#'+round_id);
+        $dialog.html(data);
 		ui_add();
-		$('#'+round_id).find('form').append('<input type="hidden" name="round_id" value="'+round_id+'"/>');
+        $dialog.find('form').append('<input type="hidden" name="round_id" value="'+round_id+'"/>');
 	});	
 }
 
@@ -17,7 +18,7 @@ function showThem(id){
 	opendialog(id,'Форма входа',350,320);
 }
 
-function opendialog(id,title,height,width){
+function opendialog(id, title){
 	var div_dialog = $('#'+id).html();
 	var box = bootbox.dialog({
 		  message: div_dialog,
@@ -33,11 +34,7 @@ function open_text(data,title) {
 	bootbox.dialog({ message: data, title: title}).find("div.modal-dialog").addClass("largeWidth");	
 }
 
-function bank_res(url,title) {
-	$.post(url, function(data) {
-		bootbox.dialog({ message: data, title: title});	
-	});	
-}
+
 
 function ui_add(){
 	$('input[type="text"],input[type="password"], textarea').addClass('form-control');
@@ -69,164 +66,47 @@ function ui_add(){
 		//$("#mp_result select").multiselect("widget").find(":radio[value='"+rel+"']").each(function() {  this.click();}); 
 	});*/
 }
-function getRandomInt(min, max)
-{
+function getRandomInt(min, max){
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function save_ct(user_id,round_id){
-	var name = $('#name_ct').val();
-	var code = $('#code_ct').val();
-	if (name == '' || code == ''){
-		alert('Введите название!')
-	}else{
-		$.post("/tc/countryNew-1/ajax-1/", {name:name,code:code},  function(data) {
-			$('#result_save').html(data);
-			$.post('/tc/userEdit-'+user_id+'/ajax-1/' , {},  function(data) {
-				$('#'+round_id).html(data);
-				ui_add();
-				$('#'+round_id).find('form').append('<input type="hidden" name="round_id" value="'+round_id+'"/>');
-			});
-		});
-	}
-}
 
-function save_mp(user_id,round_id){
-	var name = $('#name_mp').val();
-	if (name==''){
-		alert('Введите название!')
-	}else{
-		var loc_id = $('#location_mp').val();
-		$.post("/tc/mpNew-1/ajax-1/", {name:name,loc_id:loc_id},  function(data) {
-			$('#result_save').html(data);
-			$.post('/tc/userEdit-'+user_id+'/ajax-1/' , {},  function(data) {
-				$('#'+round_id).html(data);
-				ui_add();
-				$('#'+round_id).find('form').append('<input type="hidden" name="round_id" value="'+round_id+'"/>');
-			});
-		});
-	}
-}
+function recover_password(){
+    bootbox.prompt({
+        title: "Введите ваш номер телефона в формате 89991234567:",
+        inputType: 'number',
+        buttons: {
+            confirm: {
+                label: 'Отправить пароль',
+                className: 'btn-success'
+            },
+            cancel: {
+                label: 'Отмена',
+                className: 'btn-danger'
+            }
+        },
+        callback: function (phone) {
+            if ( phone != '' && phone != null ){
+                $.post("?RecoverPass", {phone:phone},  function(data) {
+                    bootbox.alert(data);
+                });
+            } else if (phone == null) {
 
-function save_loc(id,round_id){
-	var name = $('#name_loc').val();
-	if (name==''){
-		alert('Введите название!')
-	}else{
-		$.post("/tc/locNew-1/ajax-1/", {name:name},  function(data) {
-			$('#result_save').html(data);
-			$.post('/tc/turEdit-'+id+'/ajax-1/' , {},  function(data) {
-				$('#'+round_id).html(data);
-				ui_add();
-				$('#'+round_id).find('form').append('<input type="hidden" name="round_id" value="'+round_id+'"/>');
-			});
-		});
-	}
-}
-
-function save_city(id,round_id){
-	var name = $('#name_ru').val();
-	if (name==''){
-		alert('Введите название!')
-	}else{
-		var name_en = $('#name_en').val();
-		var countrys = $('#countrys').val();
-		$.post("/tc/cityNew-1/ajax-1/", {name:name,name_en:name_en,ct_id:countrys},  function(data) {
-			$('#result_save').html(data);
-			$.post('/tc/turEdit-'+id+'/ajax-1/' , {},  function(data) {
-				$('#'+round_id).html(data);
-				ui_add();
-				$('#'+round_id).find('form').append('<input type="hidden" name="round_id" value="'+round_id+'"/>');
-			});
-		});
-	}
-}
-
-function save_data(main,type,id,round_id){
-	$.post("/tc/"+type+"-1/ajax-1/", $("#new_"+type).serialize(),  function(data) {
-		$('#result_save').html(data);
-		$.post('/tc/'+main+'Edit-'+id+'/ajax-1/' , {},  function(data) {
-			$('#'+round_id).html(data);
-			//	ui_add();
-			$('#'+round_id).find('form').append('<input type="hidden" name="round_id" value="'+round_id+'"/>');
-		});
-	});
-}
-
-function tourist_by_passport(obj) {
-	pass_num = $(obj).find('.pass_num').val();
-	if (pass_num == '') {
-		alert('Введите правильный номер паспорта.');
-	}else{
-		$.post("/turs/search_tourist-1/ajax-1/", {pn:pass_num},  function(data) {
-			//Записываем по инпутам значения
-			var tags = $.parseJSON(data);
-			$(obj).find('tbody').show();
-			if (data != '[]') {
-				$(obj).find('.turist_f').val(tags[0].name_f);
-				$(obj).find('.turist_i').val(tags[0].name_i);
-				$(obj).find('.turist_o').val(tags[0].name_o);
-				$(obj).find('.turist_dob').val(tags[0].dob);
-				$(obj).find('.turist_passport').val(tags[0].passport);
-				$(obj).find('.turist_country').val(tags[0].name_f);
-				$(obj).find('.turist_id').val(tags[0].id);
 			}else{
-				alert('К сожалению, мы не нашли ваших данных.\nПопробуйте повторить поиск \nили введите данные туриста в ручную.');
-			}
+                bootbox.alert({
+                    message: 'Введите ваш номер телефона.',
+                    callback: function () {
+                        recover_password();
+                    }
+                });
+            }
+        }
+    });
 
-		});
-	}
 
 }
 
-function check_passport (pass_input){
-	var obj = $(pass_input).parent().parent().parent().parent();
-	pass_num = $(obj).find('.turist_passport').val();
-	pass_num = pass_num.replace(/_/g,'');
-	if (pass_num.length == 10) {
-		$.post("/turs/search_tourist-1/ajax-1/", {pn:pass_num},  function(data) {
-			//Записываем по инпутам значения
-			var tags = $.parseJSON(data);
-			$(obj).find('tbody').show();
-			if (data != '[]') {
-				$(obj).find('.turist_passport').addClass('cheked_pass');
-				$(obj).find('.turist_f').val(tags[0].name_f);
-				$(obj).find('.turist_i').val(tags[0].name_i);
-				$(obj).find('.turist_o').val(tags[0].name_o);
-				$(obj).find('.turist_dob').val(tags[0].dob);
-				$(obj).find('.turist_passport').val(tags[0].passport);
-				$(obj).find('.turist_country').val(tags[0].name_f);
-				$(obj).find('.turist_id').val(tags[0].id);
-			}else{
-				//$(obj).find('tbody input').val('');
-				//$(obj).find('.turist_passport').val(pass_num);
-				$(obj).find('.turist_passport').removeClass('cheked_pass');
-			}
 
-		});
-	}
-}
-
-function add_turist_table(){
-	var tur_table = $( '.turists_in_order:first' ).clone(false).appendTo( '.turists' ); 
-	var cols = $('.turists_in_order').length;
-	$(tur_table).find('.radio input').each(function( index ){
-		$(this).attr('id','radio'+index+''+cols);
-		$(this).attr('name','radio'+cols);
-	});
-	$(tur_table).find('.radio label').each(function( index ){
-		var text_button = $(this).find('span').html();
-		$(this).html(text_button);
-		$(this).attr('for','radio'+index+''+cols);
-	});
-	$(tur_table).find('.mp_result div').get(0).remove();
-	$(tur_table).find('.number').html(cols);
-	$(tur_table).find('.turist_dob').attr('id','dob_input_'+cols).removeClass('hasDatepicker');
-	$(tur_table).find('input').val('');
-	$(tur_table).find('.turist_passport').removeClass('cheked_pass');
-	$(tur_table).find('.delete_button').show();
-	ui_add();
-}
 
 function delete_row(obj) {
     var row = obj.parentNode.parentNode;
@@ -401,19 +281,7 @@ function FilterSendRedirect() {
 	Filter_backID = undefined;
 }
 
-function update_select_travels(mask){
-	$('#upd_loading').html('Идет поиск...');
-	$.post("/tc/travelEditSelect-0/", {mask:mask},  function(data) {
-		$('#update_select').parent().html(data);
-		change_mp_by_tourist ();
-	});
-	$('#upd_loading').html('');
-}
-function change_mp_by_tourist () {
-	var def_mp = $('#update_select').find('option:selected').attr('rel'); 
-	$("#id_mp_new").select2("val", def_mp);
-	//$('#id_mp_new').val(def_mp);
-}
+
 
 function printBlock(printLink){
 	productDesc = $('#'+printLink).html();

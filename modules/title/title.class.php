@@ -47,6 +47,24 @@ class titleModel extends module_model {
         }
         return $test;
     }
+
+    public function getUserName($phone){
+        $sql = "SELECT name FROM users WHERE phone = '$phone'";
+        $name = $this->get_assoc_array($sql);
+        return (isset($name[0]['name'])) ? $name[0]['name'] : false;
+    }
+
+    public function updUserPass($phone, $pin_code, $sms_id){
+        $sql = "SELECT name FROM users WHERE phone = '$phone'";
+        $name = $this->get_assoc_array($sql);
+        if (isset($name[0]['name'])) {
+            $name = $name[0]['name'];
+            $passi = md5($pin_code);
+            $sql = "UPDATE users SET pass = '$passi', sms_id = '$sms_id' WHERE phone = '$phone'";
+            $this->query($sql);
+        }
+        return $name;
+    }
 }
 class titleProcess extends module_process {
 	public function __construct($modName) {
@@ -67,6 +85,7 @@ class titleProcess extends module_process {
 		$this->nView = new titleView ( $this->modName, $this->sysMod );
 		$this->regAction ( 'view', 'Главная страница', ACTION_GROUP );
 		$this->regAction ( 'register', 'Регистрация', ACTION_PUBLIC );
+		$this->regAction ( 'RecoverPass', 'Восстановление пароля', ACTION_PUBLIC );
 		if (DEBUG == 0) {
 			$this->registerActions ( 1 );
 		}
@@ -91,8 +110,8 @@ class titleProcess extends module_process {
         $this->User->nView->viewLoginParams ( '', '', $user_id, array (), array () );
         $this->updated = true;
 
-		/********************************************************************************/
-		if ($action == 'register'){
+        /********************************************************************************/
+        if ($action == 'register'){
             $name = $this->Vals->getVal ( 'name', 'POST', 'string' );
             $phone = $this->Vals->getVal ( 'phone', 'POST', 'string' );
             $pin_code = mt_rand(1000, 9999);
@@ -104,7 +123,24 @@ class titleProcess extends module_process {
                 if (!$result) {
                     echo "<div class='alert alert-warning'>Пользователь с таким телефоном уже зарегестрирован.</div>";
                 }
-                echo "<div class='alert alert-success'>$name, спасибо за регистрацию. Временный пароль $pin_code для входа отправлен на номер: $phone</div>";
+                echo "<div class='alert alert-success'>$name, спасибо за регистрацию. Временный пароль для входа отправлен на номер: $phone </div><!-- $pin_code -->";
+            }
+            exit();
+        }		/********************************************************************************/
+        if ($action == 'RecoverPass'){
+            $phone = $this->Vals->getVal ( 'phone', 'POST', 'string' );
+            $name = $this->nModel->getUserName($phone);
+            if (!$name) {
+                echo "<div class='alert alert-warning'>Пользователь с таким телефоном не зарегестрирован.</div>";
+            } else {
+                $pin_code = mt_rand(1000, 9999);
+                $sms_id = $this->send_sms($phone, $pin_code);
+                if (!$sms_id) {
+                    echo "<div class='alert alert-danger'>Ошибка отправки СМС.</div>";
+                } else {
+                    $name = $this->nModel->updUserPass($phone, $pin_code, $sms_id);
+                    echo "<div class='alert alert-success'>$name, на ваш номер ($phone) выслан новый временный пароль для входа. </div>";
+                }
             }
             exit();
         }
@@ -131,11 +167,11 @@ class titleProcess extends module_process {
 // $data->translit = 1; // Перевести все русские символы в латиницу (позволяет сэкономить на длине СМС)
 // $data->test = 1; // Позволяет выполнить запрос в тестовом режиме без реальной отправки сообщения
 // $data->partner_id = '1'; // Можно указать ваш ID партнера, если вы интегрируете код в чужую систему
-//        $data->test = 1; // Позволяет выполнить запрос в тестовом режиме без реальной отправки сообщения
+        $data->test = 1; // Позволяет выполнить запрос в тестовом режиме без реальной отправки сообщения
         $sms = $smsru->send_one($data); // Отправка сообщения и возврат данных в переменную
 
         if ($sms->status == "OK") { // Запрос выполнен успешно
-            echo "<div class='alert alert-success'>Сообщение отправлено успешно.</div>";
+            echo "<div class='alert alert-success'>Сообщение на ваш телефон отправлено успешно.</div>";
 //            echo "ID сообщения: $sms->sms_id.";
             return $sms->sms_id;
         } else {
