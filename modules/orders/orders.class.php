@@ -302,22 +302,30 @@ class ordersModel extends module_model {
 	}
 
 	public function getChatIdByOrderRoute($order_route_id) {
-		$sql = 'SELECT u.phone_mess
+		$sql = 'SELECT u.phone_mess,
+                case u.send_sms
+                    when \'1\' then u.phone
+                    when \'0\' then \'\'
+                end as phone
 				FROM orders o
 				LEFT JOIN orders_routes r ON o.id = r.id_order
 				LEFT JOIN users u ON o.id_user = u.id
 				WHERE r.id = '.$order_route_id;
 		$row = $this->get_assoc_array($sql);
-		return $row[0]['phone_mess'];
+		return array($row[0]['phone_mess'],$row[0]['phone']);
 	}
 
     public function getChatIdByOrder($order_id) {
-        $sql = 'SELECT u.phone_mess
+        $sql = "SELECT u.phone_mess,
+                case u.send_sms
+                    when '1' then u.phone
+                    when '0' then ''
+                end as phone
 				FROM orders o
 				LEFT JOIN users u ON o.id_user = u.id
-				WHERE o.id = '.$order_id;
+				WHERE o.id = ".$order_id;
         $row = $this->get_assoc_array($sql);
-        return $row[0]['phone_mess'];
+        return array($row[0]['phone_mess'],$row[0]['phone']);
     }
 
 	public function getChatIdByCourier($courier_id) {
@@ -563,6 +571,11 @@ class ordersModel extends module_model {
                 WHERE `id` = $id";
 		return $this->query ( $sql);
 	}
+
+	public function saveSMSlog($phone, $sms_id, $sms_status_code, $sms_status_text, $sms_json){
+	    $sql = "INSERT INTO log_sms_send (sms_phone, sms_id, status_text, status_code, desc_json, dk, sms_type) VALUES ('$phone', '$sms_id','$sms_status_code','$sms_status_text','$sms_json',NOW(), 'mes')";
+	    $this->query($sql);
+    }
 
 function mydate_to_dmy($date) {
 	return date ( 'd.m.Y', strtotime ( substr ( $date, 0, 20 ) ) );
@@ -847,12 +860,15 @@ class ordersProcess extends module_process {
             if ($send_message_to_client and !$dontsend_message and isset($order_id)) {
                 $message = $this->getOrderTextInfo($order_id);
                 $message .= $message_add_text;
-                $chat_id = $this->nModel->getChatIdByOrder($order_id);
+                list($chat_id, $phone) = $this->nModel->getChatIdByOrder($order_id);
                 if (isset($chat_id) and $chat_id != '') {
                     $this->telegram($message, $chat_id);
 //                    $this->telegram($message, '243045100'); // Отправка нового заказа Админу
 //                    $this->telegram($message, '196962258');
 //                    $this->telegram($message, '379575863');
+                }
+                if (isset($phone) and $phone != '') {
+                    $this->send_sms($phone, $message);
                 }
             }
 
@@ -884,17 +900,22 @@ class ordersProcess extends module_process {
             if ($new_status > 0){
 				$this->nModel->updOrderStatus($user_id, $order_route_id, $new_status, $stat_comment);
 				$result = 'Статус успешно изменен. ';
-				$chat_id = $this->nModel->getChatIdByOrderRoute($order_route_id);
 				$status_name = $this->nModel->getStatusName($new_status);
+
+                $message = $order_info_message."\r\n";
+                $message .= '<b>Статус вашего заказа:</b> '.$status_name.''."\r\n";
+                if (trim($stat_comment) != '') {
+                    $message .= '<b>Сообщение с сайта:</b> ' . $stat_comment . '';
+                }
+
+                list($chat_id, $phone) = $this->nModel->getChatIdByOrderRoute($order_route_id);
 				if (isset($chat_id) and $chat_id != '') {
 					$result .= ' Сообщение клиенту отправлено.';
-					$message = $order_info_message."\r\n";
-					$message .= '<b>Статус вашего заказа:</b> '.$status_name.''."\r\n";
-					if (trim($stat_comment) != '') {
-						$message .= '<b>Сообщение с сайта:</b> ' . $stat_comment . '';
-					}
 					$this->telegram($message, $chat_id);
 				}
+                if (isset($phone) and $phone != '') {
+                    $this->send_sms($phone, $message);
+                }
 				echo $result;
 			}else {
 				$order_route = $this->nModel->getOrderRoute($order_route_id);
@@ -1118,6 +1139,32 @@ class ordersProcess extends module_process {
         return array((isset($from))?$from:$to,$to);
     }
 
+    function send_sms($phone, $message){
+        $smsru = new SMSRU('69da81b5-ee1e-d004-a1aa-ac83d2687954'); // Ваш уникальный программный ключ, который можно получить на главной странице
+
+        $data = new stdClass();
+        $data->to = $phone;
+        $data->text = $message; // Текст сообщения
+// $data->from = ''; // Если у вас уже одобрен буквенный отправитель, его можно указать здесь, в противном случае будет использоваться ваш отправитель по умолчанию
+// $data->time = time() + 7*60*60; // Отложить отправку на 7 часов
+// $data->translit = 1; // Перевести все русские символы в латиницу (позволяет сэкономить на длине СМС)
+// $data->test = 1; // Позволяет выполнить запрос в тестовом режиме без реальной отправки сообщения
+// $data->partner_id = '1'; // Можно указать ваш ID партнера, если вы интегрируете код в чужую систему
+        $data->test = 1; // Позволяет выполнить запрос в тестовом режиме без реальной отправки сообщения
+        $sms = $smsru->send_one($data); // Отправка сообщения и возврат данных в переменную
+
+        $sms_json = json_encode($sms);
+        $this->nModel->saveSMSlog ($phone, $sms->sms_id, $sms->status_code, $sms->status_text, $sms_json);
+
+        if ($sms->status == "OK") { // Запрос выполнен успешно
+//            echo "<div class='alert alert-success'>Сообщение на ваш телефон отправлено успешно.</div>";
+//            echo "ID сообщения: $sms->sms_id.";
+            return true;
+        } else {
+//            echo "<div class='alert alert-success'>Сообщение не отправлено. <br/>Код ошибки: $sms->status_code. <br/>Текст ошибки: $sms->status_text.</div>";
+            return false;
+        }
+    }
 
 	public function telegram($message,$chat_id,$menu = array())
 	{

@@ -159,6 +159,17 @@
                                             </td>
                                         </tr>
                                         <tr>
+                                            <td>Отправлять СМС:</td>
+                                            <td>
+                                                <input type="hidden" name="send_sms" value="0"/>
+                                                <input type="checkbox" name="send_sms" value="1" id="send_sms">
+                                                    <xsl:if test="user/send_sms = 1">
+                                                        <xsl:attribute name="checked"/>
+                                                    </xsl:if>
+                                                </input>
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <td>Заблокировать:</td>
                                             <td>
                                                 <input type="hidden" name="isBan" value="0"/>

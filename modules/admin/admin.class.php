@@ -86,7 +86,7 @@ class adminModel extends module_model {
 
 	public function userInsert($Params) {
 		$passi = md5 ( $Params ['pass'] );
-		$sql = 'INSERT INTO `users` (name,email,login,phone,phone_mess,title,isBan,inkass_proc,fixprice_inside,pay_type,pass,date_reg)
+		$sql = 'INSERT INTO `users` (name,email,login,phone,phone_mess,title,isBan,inkass_proc,fixprice_inside,pay_type,pass,send_sms,date_reg)
 				VALUES (
 				    \'%1$s\',
 				    \'%2$s\',
@@ -99,12 +99,13 @@ class adminModel extends module_model {
 				    \'%9$s\',
 				    \'%10$u\',
 				    \'' . $passi . '\',
+				    \'%11$u\',
 				    NOW()
 				    )';
 
 		$test = $this->query ( $sql, $Params ['username'], $Params ['email'], $Params ['login'], $Params ['phone'],
 			$Params ['phone_mess'], $Params ['title'], $Params ['isBan'], $Params ['inkass_proc'],
-            $Params ['fixprice_inside'], $Params ['pay_type'] );
+            $Params ['fixprice_inside'], $Params ['pay_type'], $Params ['send_sms'] );
 
 //        stop($this->sql);
 		$user_id = $this->insertID();
@@ -130,7 +131,8 @@ class adminModel extends module_model {
 				    isBan = \'%7$u\',
 				    inkass_proc = \'%8$s\',
 				    fixprice_inside = \'%9$s\',
-				    pay_type = \'%10$u\'
+				    pay_type = \'%10$u\',
+				    send_sms = \'%11$u\'
 				    ';
 
 		if ($Params ['pass'] != '') {
@@ -138,10 +140,10 @@ class adminModel extends module_model {
 			$sql .= ' ,pass = \''.$passi.'\' ';
 		}
 
-		$sql .= ' WHERE `id` = %11$u';
+		$sql .= ' WHERE `id` = %12$u';
 		$test = $this->query ( $sql, $Params ['username'], $Params ['email'], $Params ['login'], $Params ['phone'],
             $Params ['phone_mess'], $Params ['title'], $Params ['isBan'], $Params ['inkass_proc'],
-            $Params ['fixprice_inside'],$Params ['pay_type'], $Params ['user_id'] );
+            $Params ['fixprice_inside'],$Params ['pay_type'], $Params ['send_sms'], $Params ['user_id'] );
 
 //        stop($this->sql);
 
@@ -923,6 +925,7 @@ class adminProcess extends module_process {
 			$Params ['card_comment'] = $this->Vals->getVal ( 'card_comment', 'POST', 'array' );
 			$Params ['isAutoPass'] = $this->Vals->getVal ( 'isAutoPass', 'POST', 'integer' );
 			$Params ['isBan'] = $this->Vals->getVal ( 'isBan', 'POST', 'integer' );
+			$Params ['send_sms'] = $this->Vals->getVal ( 'send_sms', 'POST', 'integer' );
 			$Params ['inkass_proc'] = $this->Vals->getVal ( 'inkass_proc', 'POST', 'string' );
 			$Params ['fixprice_inside'] = $this->Vals->getVal ( 'fixprice_inside', 'POST', 'string' );
 

@@ -68,6 +68,10 @@ class titleModel extends module_model {
         }
         return $name;
     }
+    public function saveSMSlog($phone, $sms_id, $sms_status_code, $sms_status_text, $sms_json){
+        $sql = "INSERT INTO log_sms_send (sms_phone, sms_id, status_text, status_code, desc_json, dk, sms_type) VALUES ('$phone', '$sms_id','$sms_status_code','$sms_status_text','$sms_json',NOW(), 'mes')";
+        $this->query($sql);
+    }
 }
 
 class titleProcess extends module_process {
@@ -175,12 +179,14 @@ class titleProcess extends module_process {
         $data->test = 1; // Позволяет выполнить запрос в тестовом режиме без реальной отправки сообщения
         $sms = $smsru->send_one($data); // Отправка сообщения и возврат данных в переменную
 
+        $sms_json = json_encode($sms);
+        $this->nModel->saveSMSlog ($phone, $sms->sms_id, $sms->status_code, $sms->status_text, $sms_json);
         if ($sms->status == "OK") { // Запрос выполнен успешно
-            echo "<div class='alert alert-success'>Сообщение на ваш телефон отправлено успешно.</div>";
+//            echo "<div class='alert alert-success'>Сообщение на ваш телефон отправлено успешно.</div>";
 //            echo "ID сообщения: $sms->sms_id.";
             return $sms->sms_id;
         } else {
-            echo "<div class='alert alert-success'>Сообщение не отправлено. <br/>Код ошибки: $sms->status_code. <br/>Текст ошибки: $sms->status_text.</div>";
+//            echo "<div class='alert alert-success'>Сообщение не отправлено. <br/>Код ошибки: $sms->status_code. <br/>Текст ошибки: $sms->status_text.</div>";
             return false;
         }
     }
