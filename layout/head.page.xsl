@@ -41,7 +41,7 @@
 						<ul class="nav navbar-nav">
 							<li>
 								<!--<a class="callme_viewform" href="#">Зарегистрироваться</a>-->
-								<a class="text-danger" onclick="showThem('register_pop'); return false;"><b>Зарегистрироваться</b></a>
+								<a href="#" onclick="showThem('register_pop'); return false;"><b class="text-danger">Зарегистрироваться</b></a>
 							</li>
 							<li>
 								<a href="/pages/view-49/">Условия сотрудничества</a>
@@ -73,8 +73,12 @@
 									<input id="modlgn-name" type="text" name="name" class="form-control" size="18" value="" onblur="" onfocus=""/>
 								</p>
 								<p id="form-login-phone">
-									<label for="modlgn-phone">Номер телефона</label>
+									<label for="modlgn-phone">Номер мобильного телефона</label>
 									<input id="modlgn-phone" type="text" name="phone" class="form-control phone-number" maxlength="11"  placeholder="8XXXXXXXXXX"/>
+								</p>
+								<p id="form-login-desc">
+									<label for="modlgn-desc">Цель регистрации</label>
+									<input id="modlgn-desc" type="text" name="desc" class="form-control" maxlength="11"  placeholder="Доставка почты, цветов, подарков, документов..."/>
 								</p>
 								<div class="wrapper">
 									<div class="create" style="text-align: right">

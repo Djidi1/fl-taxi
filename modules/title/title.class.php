@@ -27,18 +27,21 @@ class titleModel extends module_model {
 		}
 		return $collect;
 	}
+
     public function getPrices() {
         $sql = 'SELECT id, km_from, km_to, km_cost FROM routes_price r';
         return $this->get_assoc_array($sql);
     }
+
     public function getAddPrices() {
         $sql = 'SELECT id, type, cost_route FROM routes_add_price r';
         return $this->get_assoc_array($sql);
     }
-    public function createUser($name, $phone, $pin_code, $sms_id){
+
+    public function createUser($name, $phone, $desc, $pin_code, $sms_id){
         $passi = md5($pin_code);
-        $sql = "INSERT INTO users (name, email, login, pass, date_reg, isban, prior, title, phone, phone_mess, fixprice_inside, inkass_proc, pay_type, sms_id) 
-                VALUES ('$name','','$phone','$passi',NOW(),'0','0','$name','$phone','','','','','$sms_id')";
+        $sql = "INSERT INTO users (name, email, login, pass, date_reg, isban, prior, title, phone, phone_mess, fixprice_inside, inkass_proc, pay_type, sms_id, `desc`) 
+                VALUES ('$name','','$phone','$passi',NOW(),'0','0','$name','$phone','','','','','$sms_id','$desc')";
         $test = $this->query($sql);
         if ($test) {
             $user_id = $this->insertID();
@@ -66,6 +69,7 @@ class titleModel extends module_model {
         return $name;
     }
 }
+
 class titleProcess extends module_process {
 	public function __construct($modName) {
 		global $values, $User, $LOG, $System;
@@ -114,12 +118,13 @@ class titleProcess extends module_process {
         if ($action == 'register'){
             $name = $this->Vals->getVal ( 'name', 'POST', 'string' );
             $phone = $this->Vals->getVal ( 'phone', 'POST', 'string' );
+            $desc = $this->Vals->getVal ( 'desc', 'POST', 'string' );
             $pin_code = mt_rand(1000, 9999);
             $sms_id = $this->send_sms($phone,$pin_code);
             if (!$sms_id) {
                 echo "<div class='alert alert-danger'>Ошибка отправки СМС.</div>";
             } else {
-                $result = $this->nModel->createUser($name, $phone, $pin_code, $sms_id);
+                $result = $this->nModel->createUser($name, $phone, $desc, $pin_code, $sms_id);
                 if (!$result) {
                     echo "<div class='alert alert-warning'>Пользователь с таким телефоном уже зарегестрирован.</div>";
                 }
