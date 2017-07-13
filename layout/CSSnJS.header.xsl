@@ -32,7 +32,7 @@
             <script src="//maps.googleapis.com/maps/api/js?key=AIzaSyAnDrB-qO4i5uCua-4krGQsloWYJBRtgNU&libraries=places"></script>
                 ]]>
             </xsl:text>
-        <script src="/js/gmap.js?v2.24"/>
+        <script src="/js/gmap.js?v2.25"/>
         <script>
             $(function(){
             if ($('#edit_content').length){CKEDITOR.replace( 'edit_content');}
