@@ -427,13 +427,14 @@ function test_time_all_routes(){
             return false;
         }
         if (need_sync) {
-            bootbox.alert('Время готовности всех заказов должно быть единым.<br/>Мы установили равным времени готовности первого заказа по маршруту');
+            bootbox.alert('Время готовности всех заказов должно быть единым.<br/>Мы установили время равным времени готовности первого заказа по маршруту');
             $routes_block.find('.to_time_ready').val(first_time);
             return false;
         }
 
         $routes_block.each(function () {
             var this_ready = $(this).find('.to_time_ready').val();
+            var this_ready_end = $(this).find('.to_time_ready_end').val();
             var this_to_time = $(this).find('.to_time').val();
             var this_to_time_end = $(this).find('.to_time_end').val();
 
@@ -461,6 +462,7 @@ function test_time_all_routes(){
 
 function test_time_routes_each(route_row){
     var to_time_ready = $(route_row).find('.to_time_ready').val();
+    var to_time_ready_end = $(route_row).find('.to_time_ready_end').val();
     var to_time = $(route_row).find('.to_time').val();
     var to_time_end = $(route_row).find('.to_time_end').val();
 /*
@@ -470,6 +472,7 @@ function test_time_routes_each(route_row){
      iLog('time_now: '+TimeToFloat(timestampToTime()));
 */
     var tt_ready = TimeToFloat(to_time_ready);
+    var tt_ready_end = TimeToFloat(to_time_ready_end);
     var tt = TimeToFloat(to_time);
     var tt_end = TimeToFloat(to_time_end);
     var t_now = TimeToFloat(timestampToTime());
@@ -488,6 +491,7 @@ function test_time_routes_each(route_row){
     var ready_1_to = $('#ready_1_to').val();
     var ready_1_period = $('#ready_1_period').val();
     var ready_2_period = $('#ready_2_period').val();
+    var ready_3_period = $('#ready_3_period').val();
     var ready_today_period = $('#ready_today_period').val();
     var period_period = $('#period_period').val();
 
@@ -500,6 +504,12 @@ function test_time_routes_each(route_row){
     var errors = '<ul>';
     // Если время доставки меньше готовности, то заказ на следующий день
     tt_end = (tt_end - tt_ready) < 0 ? tt_end + 24 : tt_end;
+
+    // (0) Время между "забрать по" и "доставить с" не может быть больше 120 минут (2х часов), если стоит бесконечность по умолчанию то эта проверка не нужна
+    if ((tt - tt_ready_end) < ready_3_period ) {
+        errors += '<li>Время начала доставки не может быть меньше '+ready_3_period+':00 от времени "забрать по".</li><br/>';
+        no_error = false;
+    }
 
     // (1) Заказы вечером на завтра запрещены на утро (проверка по крайнему времени доставки)
     if ( set_date == tomarrow && t_now > period_tomarrow_to && tt_end < period_tomarrow_from ){

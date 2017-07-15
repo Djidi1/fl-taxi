@@ -460,6 +460,16 @@ class adminModel extends module_model {
 		}
 		return $items;
 	}
+	public function getGoodsList() {
+		$sql = 'SELECT t.id, t.goods_name
+				FROM goods_types t';
+		$this->query ( $sql );
+		$items = array ();
+		while ( ($row = $this->fetchRowA ()) !== false ) {
+			$items [] = $row;
+		}
+		return $items;
+	}
 
     public function saveRoutesPrices($km_from,$km_to,$km_cost,$km_neva,$km_kad,$km_geozone,$km_vsevol,$km_target,$user_id){
         if (is_array($km_from)) {
@@ -508,7 +518,13 @@ class adminModel extends module_model {
         }
         return true;
     }
-
+    public function saveGoodsList($params){
+        foreach ($params['value'] as $id => $value) {
+            $sql = "UPDATE goods_types SET `goods_name` = '$value' WHERE id = '$id';";
+            $this->query($sql);
+        }
+        return true;
+    }
 	public function carUpdate($param) {
 		$sql = "
 		UPDATE cars_couriers 
@@ -1072,6 +1088,7 @@ class adminProcess extends module_process {
                 $params['period_today'] = $this->Vals->getVal('period_today', 'POST', 'array');
                 $params['ready_1'] = $this->Vals->getVal('ready_1', 'POST', 'array');
                 $params['ready_2'] = $this->Vals->getVal('ready_2', 'POST', 'array');
+                $params['ready_3'] = $this->Vals->getVal('ready_3', 'POST', 'array');
                 $params['ready_today'] = $this->Vals->getVal('ready_today', 'POST', 'array');
                 $params['period'] = $this->Vals->getVal('period', 'POST', 'array');
                 $this->nModel->saveTimeCheckList($params);
@@ -1092,8 +1109,13 @@ class adminProcess extends module_process {
                 $params['mult'] = $this->Vals->getVal('mult', 'POST', 'array');
                 $this->nModel->saveGoodsPriceList($params);
             }
+            if ($this->Vals->getVal ( 'sub_action', 'POST', 'string' ) == 'save_goods'){
+                $params['value'] = $this->Vals->getVal('value', 'POST', 'array');
+                $this->nModel->saveGoodsList($params);
+            }
             $prices = $this->nModel->getGoodsPriceList();
-            $this->nView->viewGoodsPriceList($prices);
+            $goods = $this->nModel->getGoodsList();
+            $this->nView->viewGoodsPriceList($prices,$goods);
             $this->updated = true;
         }
 		/* * Группы * */
@@ -1429,12 +1451,16 @@ class adminView extends module_view {
         $this->arrToXML ( $times, $Container, 'times' );
 		return true;
 	}
-	public function viewGoodsPriceList($prices) {
+	public function viewGoodsPriceList($prices,$goods) {
 		$this->pXSL [] = RIVC_ROOT . 'layout/admin/goods.prices.list.xsl';
 		$Container = $this->newContainer ( 'priceslist' );
 		foreach ( $prices as $item ) {
 			$this->arrToXML ( $item, $Container, 'item' );
 		}
+        $ContainerGoods = $this->addToNode ( $Container, 'goods', '' );
+        foreach ( $goods as $item ) {
+            $this->arrToXML ( $item, $ContainerGoods, 'item' );
+        }
 		return true;
 	}
 

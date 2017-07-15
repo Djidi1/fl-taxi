@@ -13,6 +13,8 @@
 
 				<li class="list-group-item">Стандартный период доставки <input name="ready_2[period]" class="form-control" type="number" value="{times/ready_2/period}"/> ч. от времени готовности.</li>
 
+				<li class="list-group-item">Стандартный период начала доставки <input name="ready_3[period]" class="form-control" type="number" value="{times/ready_3/period}"/> ч. от времени готовности "по".</li>
+
 				<li class="list-group-item">Крайнее время доставки не может быть меньше <input name="ready_today[period]" class="form-control" type="number" value="{times/ready_today/period}"/>  ч. от времени заказа.</li>
 
 				<li class="list-group-item">Период доставки всех заказов не менее <input name="period[period]" class="form-control" type="number" value="{times/period/period}"/> минут. (Кроме заказов к точному времени)</li>
