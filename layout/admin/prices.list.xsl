@@ -29,13 +29,15 @@
 					</tr>
 				</tbody>
 				</table>
-				<table class="table table-hover">
+				<table class="table table-hover prices">
 					<thead>
 						<tr>
 							<th>id</th>
 							<th>от</th>
 							<th>до</th>
 							<th>стоимость</th>
+							<th>
+							</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -53,12 +55,35 @@
 								<td>
 									<input name="km_cost[]" class="form-control" type="number" value="{km_cost}"/>
 								</td>
+								<td>
+									<span class="btn btn-danger btn-xs" title="Удалить строку" onclick="$(this).parent().parent().remove()">
+										<i class="fa fa-trash" aria-hidden="true"/>
+									</span>
+								</td>
 							</tr>
 						</xsl:for-each>
+						<tr>
+							<td>
+							</td>
+							<td>
+								<input name="km_from[]" class="form-control" type="number" value=""/>
+							</td>
+							<td>
+								<input name="km_to[]" class="form-control" type="number" value=""/>
+							</td>
+							<td>
+								<input name="km_cost[]" class="form-control" type="number" value=""/>
+							</td>
+							<td>
+							</td>
+						</tr>
 					</tbody>
 				</table>
+				<span class="btn btn-info btn-sm" onclick="$('table.prices').find('tbody tr:last').after($('table.prices').find('tbody tr:last').clone());">Добавить цену</span>
 			</div>
-			<input class="btn btn-success" type="submit" value="Сохранить"/>
+			<div align="right">
+				<input class="btn btn-success" type="submit" value="Сохранить"/>
+			</div>
 		</form>
 	</xsl:template>
 </xsl:stylesheet>

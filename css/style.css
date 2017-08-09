@@ -169,6 +169,7 @@ span.order-add-title {
     overflow: hidden;
     font-weight: bold;
     font-size: 10px;
+    word-break: break-all;
 }
 
 .input-group .form-control {

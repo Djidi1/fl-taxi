@@ -290,9 +290,15 @@ function re_calc(obj){
     var cost_route = $(route_row).find('.cost_route').val();
     var pay_type = $(route_row).find('.pay_type').val();
     var inkass = 0;
+
+    var PayTypeIsDisabled = $(route_row).find('.pay_type').is(':disabled');
     //Если инкассация больше 0 то автоматически ставиться оплата доставки "По Договору"
-    if (cost_tovar > 0) {
+    if (cost_tovar > 0 && !PayTypeIsDisabled) {
         $(route_row).find('.pay_type').val('3');
+    }
+    //Если инкасация или если по новому то "Наличные у получателя" ровны 0 то "Способ оплаты доставки" автоматически изменяется на "Курьеру в магазине" - только если в анкете клиента стоит свободный выбор, если нет, то всегда автоматом то что указанно в анкете
+    if (cost_tovar == 0 && !PayTypeIsDisabled) {
+        $(route_row).find('.pay_type').val('1');
     }
     if (pay_type == 2){
         inkass = Number(cost_tovar)+Number(cost_route);
@@ -326,6 +332,9 @@ function target_time_show(){
 function round5(x){
     return Math.ceil(x/5)*5;
 }
+function round00(x){
+    return Math.ceil(x*100)/100;
+}
 // адская проверка времени
 function test_time_routes_add() {
     $('.to_time').removeAttr('disabled');
@@ -348,14 +357,24 @@ function test_time_routes_add() {
             bootbox.alert('Время готовности не может быть меньше текущего времени.');
         }
         // Если время готовности ПО меньше времени готовности С
-        else if (TimeToFloat(this_ready_end) < TimeToFloat(this_ready)) {
+        else if (this_ready_end != '-' && TimeToFloat(this_ready_end) < TimeToFloat(this_ready)) {
             $(this).find('.to_time_ready_end').val(this_ready);
             test_time_routes_add();
         }
         // Если время готовности меньше времени С
-        else if (TimeToFloat(this_ready_end) > TimeToFloat(this_to_time) || TimeToFloat(this_ready_end) > TimeToFloat(this_to_time_target)) {
+        else if (this_ready_end != '-' &&
+            (TimeToFloat(this_ready_end) > TimeToFloat(this_to_time) ||
+                TimeToFloat(this_ready_end) > TimeToFloat(this_to_time_target))) {
             $(this).find('.to_time').val(this_ready_end);
             $(this).find('.to_time_target').val(this_ready_end);
+            test_time_routes_add();
+        }
+        // Если время готовности меньше времени С
+        else if (this_ready_end == '-' &&
+            (TimeToFloat(this_ready) > TimeToFloat(this_to_time) ||
+                TimeToFloat(this_ready) > TimeToFloat(this_to_time_target))) {
+            $(this).find('.to_time').val(this_ready);
+            $(this).find('.to_time_target').val(this_ready);
             test_time_routes_add();
         }
         // Если время С меньше времени ПО
@@ -374,7 +393,8 @@ function test_time_routes_add() {
             // б. Если от начала доставки первого адреса до конца доставки первого адреса более 60 минут , то программа внутри у себя подставляет что там промежуток в 60 минут, например (с 14,00 до 18,00 , программа в уме держит что там с 14,00 до 15,00)
 
             // в. время начала следующего заказа , больше или равно времени начало предыдущего адреса но если больше то не более чем на 30 минут.
-            if ((TimeToFloat(next_to_time) < TimeToFloat(this_to_time)) || (TimeToFloat(next_to_time) - TimeToFloat(this_to_time) > 0.5)){
+            if ((TimeToFloat(next_to_time) < TimeToFloat(this_to_time))
+                || round00((TimeToFloat(next_to_time) - TimeToFloat(this_to_time)) > 0.5)){
                 $(next_route).find('.to_time').val(this_to_time);
             }
             // console.log('this_to_time:' + this_to_time);
@@ -497,17 +517,17 @@ function test_time_routes_each(route_row){
 
 
     // Если время доставки меньше текущего, то заказ на следующий день (проверяю по второму времени)
-    var tt_end_2 = (tt_end - t_now) < 0 ? tt_end + 24 : tt_end;
-    var tt_2 = (tt_end - t_now) < 0 ? tt + 24 : tt;
+    var tt_end_2 = round00(tt_end - t_now) < 0 ? tt_end + 24 : tt_end;
+    var tt_2 = round00(tt_end - t_now) < 0 ? tt + 24 : tt;
 
     var no_error = true;
     var errors = '<ul>';
     // Если время доставки меньше готовности, то заказ на следующий день
-    tt_end = (tt_end - tt_ready) < 0 ? tt_end + 24 : tt_end;
+    tt_end = round00(tt_end - tt_ready) < 0 ? tt_end + 24 : tt_end;
 
     // (0) Время между "забрать по" и "доставить с" не может быть больше 120 минут (2х часов), если стоит бесконечность по умолчанию то эта проверка не нужна
-    if ((tt - tt_ready_end) < ready_3_period ) {
-        errors += '<li>Время начала доставки не может быть меньше '+ready_3_period+':00 от времени "забрать по".</li><br/>';
+    if (round00(tt - tt_ready_end) > ready_3_period && to_time_ready_end != '-') {
+        errors += '<li>Время начала доставки не может быть больше '+ready_3_period+':00 от времени "забрать по".</li><br/>';
         no_error = false;
     }
 
@@ -526,25 +546,25 @@ function test_time_routes_each(route_row){
     // и остальные проверки кроме, 2,5 часов оствляем
     if (tt_ready >= ready_1_from && tt_ready <= ready_1_to){
         // проверка от готовности до начала доставки - 2 час
-        if ((tt_end - tt_ready) < ready_1_period){
-            errors += '<li>Крайнее время доставки не может быть меньше '+ready_1_period+' ч. от времени готовности.</li><br/>';
+        if (round00(tt_end - tt_ready) < ready_1_period){
+            errors += '<li>Значение "Доставить по" не может быть менее '+ready_1_period+' ч. от значения "Можно забрать с".</li><br/>';
             no_error = false;
         }
     } else {
         // (4) проверка от готовности (2,5 часа) - 18.05.2017 - заменил на 3 часа
-        if ((tt_end - tt_ready) <= ready_2_period) {
-            errors += '<li>Крайнее время доставки не может быть меньше '+ready_2_period+' ч. от времени готовности.</li><br/>';
+        if (round00(tt_end - tt_ready) < ready_2_period) {
+            errors += '<li>Значение "Доставить по" не может быть менее '+ready_2_period+' ч. от значения "Можно забрать с".</li><br/>';
             no_error = false;
         }
         // (5) Проверка от времени заказа
-        if (set_date == today && (tt_end_2 - t_now) <= ready_today_period ){
-            errors += '<li>Крайнее время доставки не может быть меньше '+ready_today_period+' ч. от времени заказа.</li><br/>';
+        if (set_date == today && round00(tt_end_2 - t_now) < ready_today_period ){
+            errors += '<li>Значение "Доставить по" не может быть менее '+ready_today_period+' ч. от текущего времени.</li><br/>';
             no_error = false;
         }
     }
     // (6) Проверка от и до не менее 40 мин, если только не к точному времени
-    if ((tt_end_2 - tt_2) < (period_period / 60) && !$('.target').prop('checked')){
-        errors += '<li>Интервал доставки не может быть менее '+period_period+' мин.</li><br/>';
+    if (round00(tt_end_2 - tt_2) < (period_period / 60) && !$('.target').prop('checked')){
+        errors += '<li>Интервал между значениями "Доставить с" и "Доставить по" не может быть менее '+period_period+' мин.</li><br/>';
         no_error = false;
     }
 
@@ -644,7 +664,7 @@ function TimeToFloat(time){
         var to_time_ready_arr = time.split(':');
         result = parseInt(to_time_ready_arr[0])+parseInt(to_time_ready_arr[1])/60;
     }
-    return Math.round(result * 100) / 100;
+    return round00(result);
 }
 
 function timestampToTime(){
@@ -658,7 +678,7 @@ function timestampToTime(){
     return hours + ':' + minutes.substr(-2);
 }
 
-function add_data_table(obj){
+function add_data_table(obj, type){
     /*
     // Setup - add a text input to each footer cell
 
@@ -667,10 +687,36 @@ function add_data_table(obj){
         $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
     } );
 */
+    var no_data = 'В таблице отсутствуют данные';
+    if (type == 'logist') {
+        no_data = 'Нет заказов на выбранную дату';
+    }
+    if (type == 'client') {
+        no_data = 'У Вас нет заказов на выбранную дату';
+    }
     // DataTable
     $(obj).DataTable({
         "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.10.13/i18n/Russian.json"
+            "processing": "Подождите...",
+            "search": "Поиск:",
+            "lengthMenu": "Показать _MENU_ записей",
+            "info": "Записи с _START_ до _END_ из _TOTAL_ записей",
+            "infoEmpty": "Записи с 0 до 0 из 0 записей",
+            "infoFiltered": "(отфильтровано из _MAX_ записей)",
+            "infoPostFix": "",
+            "loadingRecords": "Загрузка записей...",
+            "zeroRecords": "Записи отсутствуют.",
+            "emptyTable": no_data,
+            "paginate": {
+                "first": "Первая",
+                "previous": "Предыдущая",
+                "next": "Следующая",
+                "last": "Последняя"
+            },
+            "aria": {
+                "sortAscending": ": активировать для сортировки столбца по возрастанию",
+                "sortDescending": ": активировать для сортировки столбца по убыванию"
+            }
         }
         , "bLengthChange": false
         , "bPaginate": false

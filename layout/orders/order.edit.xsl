@@ -173,6 +173,7 @@
                             <!--</textarea>-->
                             <!--<font color="red">* Поля обязательны для заполнения.</font>-->
                         </div>
+                        <div class="panel-footer">
                         <xsl:if test="$no_edit != 1">
                             <div class="row">
                                 <div class="col-xs-6">
@@ -186,11 +187,10 @@
                                     </div>
                                 </div>
                             </div>
+                            <br/>
                             <div class="row">
                                 <div class="col-xs-12">
-                                    <div style="text-align: center">
                                         <a href="/" class="btn btn-warning"><span class="glyphicon glyphicon-circle-arrow-left"/> Выйти без сохранения</a>
-                                    </div>
                                 </div>
                             </div>
                         </xsl:if>
@@ -199,7 +199,7 @@
                                 Если вы хотетите отредактировать или отменить заказ свяжитесь, пожалуйста, с оператором по телефону: <b>407-24-52</b>
                             </div>
                         </xsl:if>
-                        <br/>
+                        </div>
                     </div>
                 </div>
                 <div class="col-sm-4 map-form">
@@ -414,11 +414,11 @@
                 </span>
                 <input type="number" class="order-route-data number goods_val" name="goods_val[]" title="Количество товара" value="{goods_val}" onchange="calc_route(1);" required=""/>
             </div>
-            <div class="form-control" style="width: 15%;">
+            <div class="form-control" style="width: 15%;" title="Общая сумма наличных, которую необходимо забрать у получателя, включая  цену доставки если ее оплачивает получатель.">
                 <span class="order-add-title text-success">
-                    Инкассация
+                    ₽ от получателя
                 </span>
-                <input type="text" class="order-route-data number cost_tovar" name="cost_tovar[]" title="Стоимость товара" value="{cost_tovar}" onkeyup="re_calc(this)" required=""/>
+                <input type="text" class="order-route-data number cost_tovar" name="cost_tovar[]" value="{cost_tovar}" onkeyup="re_calc(this)" required=""/>
             </div>
             <div class="form-control" style="width: 15%;">
                 <span class="order-add-title text-success">
@@ -433,23 +433,22 @@
             <xsl:if test="/page/body/module[@name='CurentUser']/container/group_id != 2">
                 <div class="form-control" style="width: 20%;">
                     <span class="order-add-title text-success">
-                        <span class="glyphicon glyphicon-usd" aria-hidden="true"/>
-                        курьер
+                        ₽ курьер
                     </span>
                     <input type="text" class="order-route-data number cost_car" name="cost_car[]" title="Заработок курьера" value="{cost_car}" onkeyup="re_calc(this)"/>
                 </div>
             </xsl:if>
-            <div class="form-control" style="width: 20%;">
+            <div class="form-control" style="width: 20%;" title="Выберете способ оплаты наших услуг.">
                 <xsl:if test="/page/body/module[@name='CurentUser']/container/group_id = 2">
                     <xsl:attribute name="style">width:40%</xsl:attribute>
                 </xsl:if>
                 <span class="order-add-title text-success">
-                    Оплата доставки
+                    Способ оплаты доставки
                 </span>
                 <xsl:if test="//@user_pay_type > 0">
                     <input type="hidden" name="pay_type[]" value="{//@user_pay_type}" />
                 </xsl:if>
-                <select class="order-route-data pay_type" name="pay_type[]" title="Тип оплаты курьеру" onchange="re_calc(this)" required="">
+                <select class="order-route-data pay_type" name="pay_type[]" onchange="re_calc(this)" required="">
                     <xsl:if test="//@user_pay_type > 0">
                         <xsl:attribute name="disabled">disabled</xsl:attribute>
                     </xsl:if>
@@ -546,12 +545,15 @@
                     <xsl:value-of select="$select_onchange"/>
                 </xsl:attribute>
             </xsl:if>
+            <xsl:if test="$select_name = 'to_time_ready_end[]'">
+                <option value="-">∞</option>
+            </xsl:if>
             <xsl:for-each select="../../timer/element">
                 <option value="{.}">
                     <xsl:if test=". = $select_value">
                         <xsl:attribute name="selected">selected</xsl:attribute>
                     </xsl:if>
-                    <xsl:if test="not(../../order/id) and . = ../../@time_now_five">
+                    <xsl:if test="not(../../order/id) and . = ../../@time_now_five and $select_name != 'to_time_ready_end[]'">
                         <xsl:attribute name="selected">selected</xsl:attribute>
                     </xsl:if>
                     <xsl:value-of select="."/>

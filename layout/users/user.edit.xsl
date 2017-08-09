@@ -8,7 +8,7 @@
                 <span class="glyphicon glyphicon-exclamation-sign"/> Прежде чем оставить заказ Вам необходимо заполнить всю информацию в своей карточке клиента.
             </div>
         </xsl:if>
-        <form action="/admin/userUpdate-{user/user_id}/" method="post" name="main_form">
+        <form action="/admin/userUpdate-{user/user_id}/" method="post" name="main_form" autocomplete="off">
             <div class="row">
                 <div class="col-md-6">
 
@@ -80,6 +80,7 @@
                                     <tr>
                                         <td>Логин:</td>
                                         <td>
+                                            <input style="display:none" type="text" name="fakeusernameremembered"/>
                                             <input class="form-control" type="text" name="login" id="login" onkeyup="check_user(this)"
                                                    value="{user/login}" size="30">
                                                 <xsl:if test="user/login != ''">
@@ -94,7 +95,8 @@
                                     <tr>
                                         <td>Пароль:</td>
                                         <td>
-                                            <input class="form-control" type="password" name="pass" id="pass">
+                                            <input style="display:none" type="password" name="fakepasswordremembered"/>
+                                            <input class="form-control" type="password" name="pass" id="pass" autocomplete="new-password">
                                                 <!--<xsl:if test="/page/body/module[@name='CurentUser']/container/group_id != 1">-->
                                                     <!--<xsl:attribute name="required">required</xsl:attribute>-->
                                                 <!--</xsl:if>-->

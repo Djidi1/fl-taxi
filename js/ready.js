@@ -22,60 +22,30 @@ jQuery(function ($) {
         });
 
     $('.data-table').dataTable({"language": {
-        "url": "//cdn.datatables.net/plug-ins/1.10.13/i18n/Russian.json"
+        "processing": "Подождите...",
+        "search": "Поиск:",
+        "lengthMenu": "Показать _MENU_ записей",
+        "info": "Записи с _START_ до _END_ из _TOTAL_ записей",
+        "infoEmpty": "Записи с 0 до 0 из 0 записей",
+        "infoFiltered": "(отфильтровано из _MAX_ записей)",
+        "infoPostFix": "",
+        "loadingRecords": "Загрузка записей...",
+        "zeroRecords": "Записи отсутствуют.",
+        "emptyTable": "В таблице отсутствуют данные",
+        "paginate": {
+            "first": "Первая",
+            "previous": "Предыдущая",
+            "next": "Следующая",
+            "last": "Последняя"
+        },
+        "aria": {
+            "sortAscending": ": активировать для сортировки столбца по возрастанию",
+            "sortDescending": ": активировать для сортировки столбца по убыванию"
+        }
     }});
 
-    add_data_table($('.new-logist-data-table'));
+    add_data_table($('.new-logist-data-table'),'logist');
 
-/*
-    $('.logist-data-table').dataTable({
-        "columnDefs": [
-            { "visible": false, "targets": 0 }
-        ],
-        "order": [[ 0, 'asc' ]],
-        "displayLength": 25,
-        "drawCallback": function ( ) {
-            var api = this.api();
-            var rows = api.rows( {page:'current'} ).nodes();
-            var last=null;
-            api.column(0, {page:'current'} ).data().each( function ( group, i ) {
-                if ( last !== group ) {
-                    $(rows).eq( i ).before(
-                        '<tr class="group"><td class="order-group" colspan="6">'+group+'</td></tr>'
-                    );
-                    last = group;
-                }
-            } );
-        },
-        "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.10.13/i18n/Russian.json"
-        }
-    } );
-
-    $('.orders-data-table').dataTable({
-        "columnDefs": [
-            { "visible": false, "targets": 0 }
-        ],
-        "order": [[ 0, 'asc' ]],
-        "displayLength": 25,
-        "drawCallback": function ( ) {
-            var api = this.api();
-            var rows = api.rows( {page:'current'} ).nodes();
-            var last=null;
-            api.column(0, {page:'current'} ).data().each( function ( group, i ) {
-                if ( last !== group ) {
-                    $(rows).eq( i ).before(
-                        '<tr class="group"><td class="order-group" colspan="6">'+group+'</td></tr>'
-                    );
-                    last = group;
-                }
-            } );
-        },
-        "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.10.13/i18n/Russian.json"
-        }
-    } );
-*/
     $('.thumbnail').click(function () {
         var src = $(this).attr("src");
         var img = '<img src="' + src + '" style="width: 100%;" />';

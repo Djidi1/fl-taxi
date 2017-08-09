@@ -430,13 +430,13 @@ class adminModel extends module_model {
 			$items [] = $row;
             $i++;
 		}
-		// Дополняем массив до 10 значений
-		$fake_price = array('id'=>'', 'km_from'=>'', 'km_to'=>'', 'km_cost'=>'');
-		if ($i < 10) {
-		    for ( ; $i <= 10; $i++){
-                $items [] = $fake_price;
-            }
-        }
+//		// Дополняем массив до 10 значений
+//		$fake_price = array('id'=>'', 'km_from'=>'', 'km_to'=>'', 'km_cost'=>'');
+//		if ($i < 10) {
+//		    for ( ; $i <= 10; $i++){
+//                $items [] = $fake_price;
+//            }
+//        }
 		return $items;
 	}
 	public function getTimeCheckList() {

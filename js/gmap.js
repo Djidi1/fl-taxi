@@ -193,7 +193,8 @@ function calc_route(recalc_cost, dest_point) {
                         var points_count = 0;
                         for (var z = 0; z < route.legs[i].steps[k].lat_lngs.length; z++) {
                             var way_latlangs = route.legs[i].steps[k].lat_lngs[z];
-                            if (google.maps.geometry.poly.containsLocation(way_latlangs, poly_spb_kad)) {
+                            if (google.maps.geometry.poly.containsLocation(way_latlangs, poly_spb_kad)
+                                || google.maps.geometry.poly.containsLocation(way_latlangs, poly_Right)) {
                                 inside_path.push(way_latlangs);
                             } else {
                                 outside_path.push(way_latlangs);
