@@ -4,7 +4,7 @@
         <link href="/images/favicon.png" rel="shortcut icon" type="image/vnd.microsoft.icon"/>
         <link rel="stylesheet" href="/css/camera.css"/>
         <link rel="stylesheet" href="/css/select2.css?v4.0.3"/>
-        <link rel="stylesheet" href="/css/style.css?v2.2"/>
+        <link rel="stylesheet" href="/css/style.css?v2.3"/>
         <link rel="stylesheet" href="/css/font-awesome.min.css"/>
         <link rel="stylesheet" href="/css/print.css" media="Print"/>
         <link rel="stylesheet" href="/css/bootstrap.min.css"/>

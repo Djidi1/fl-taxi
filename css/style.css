@@ -138,10 +138,12 @@ input.order-route-data, select.order-route-data {
 input.select2-search__field {
     border: none !important;
 }
-span.select2-dropdown {
+span.select2-dropdown.select2-dropdown--above {
+    top: 0;
+}
+span.select2-dropdown.select2-dropdown--below {
     top: -29px;
 }
-
 .time_check_list input.form-control {
     width: 64px;
     display: inline;
